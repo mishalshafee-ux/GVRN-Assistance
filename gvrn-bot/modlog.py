@@ -51,6 +51,48 @@ async def resolve_member(ctx, user_text):
         return None
 
 
+def resolve_role(guild, role_text):
+    role_text = role_text.strip()
+
+    if role_text.startswith("<@&") and role_text.endswith(">"):
+        role_id = role_text.replace("<@&", "").replace(">", "")
+        if role_id.isdigit():
+            return guild.get_role(int(role_id))
+
+    if role_text.isdigit():
+        return guild.get_role(int(role_text))
+
+    lowered = role_text.lower()
+    return discord.utils.find(lambda role: role.name.lower() == lowered, guild.roles)
+
+
+def parse_roles_and_reason(guild, text):
+    if "|" in text:
+        roles_part, reason = text.split("|", 1)
+        role_names = [item.strip() for item in roles_part.split(",") if item.strip()]
+        roles = [resolve_role(guild, role_name) for role_name in role_names]
+        roles = [role for role in roles if role is not None]
+        return roles, reason.strip() or "No reason provided."
+
+    words = text.split()
+    best_role = None
+    best_index = 0
+
+    for index in range(len(words), 0, -1):
+        possible_name = " ".join(words[:index])
+        role = resolve_role(guild, possible_name)
+        if role:
+            best_role = role
+            best_index = index
+            break
+
+    if not best_role:
+        return [], "No reason provided."
+
+    reason = " ".join(words[best_index:]).strip() or "No reason provided."
+    return [best_role], reason
+
+
 async def add_log(bot, guild, channel, user, command_name, details):
     logs = load_logs()
 
@@ -83,7 +125,7 @@ class ModLog(commands.Cog):
         self.bot = bot
 
     @commands.command(name="role")
-    async def role(self, ctx, user_text: str, roles: commands.Greedy[discord.Role], *, reason: str = "No reason provided."):
+    async def role(self, ctx, user_text: str, *, role_text: str):
         if not can_use_role_command(ctx.author):
             await ctx.send("You need High Command+ to use this command.")
             return
@@ -94,8 +136,10 @@ class ModLog(commands.Cog):
             await ctx.send("Could not find that user. Use a mention or user ID.")
             return
 
+        roles, reason = parse_roles_and_reason(ctx.guild, role_text)
+
         if not roles:
-            await ctx.send("Mention at least one role. Example: `!role @user @Role reason`")
+            await ctx.send("Could not find that role. Example: `!role @user Staff Team | reason`")
             return
 
         added = []
