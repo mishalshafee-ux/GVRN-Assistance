@@ -16,6 +16,7 @@ if not TOKEN:
 intents = discord.Intents.default()
 intents.guilds = True
 intents.members = True
+intents.message_content = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
@@ -82,6 +83,7 @@ async def main():
         await bot.load_extension("staff_adjustment")
         await bot.load_extension("welcome")
         await bot.load_extension("verification")
+        await bot.load_extension("modlog")
         await bot.start(TOKEN)
 
 
