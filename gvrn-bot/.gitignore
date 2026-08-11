@@ -5,3 +5,4 @@ __pycache__/
 vehicle_data.json
 session_state.json
 command_logs.json
+welcome_cache.json
