@@ -1,14 +1,9 @@
 import os
 
 import discord
-from discord import app_commands
 from discord.ext import commands
 
 VERIFY_ROLE_ID = int(os.getenv("VERIFY_ROLE_ID", "0"))
-
-# =========================
-# VERIFY EMBED EDIT AREA
-# =========================
 
 SERVER_NAME = "GVRN"
 VERIFY_COLOR = 0x76F55D
@@ -18,10 +13,6 @@ VERIFY_DESCRIPTION = (
     "Click the button below to verify yourself and gain access to the server."
 )
 VERIFY_BUTTON_LABEL = "Verify"
-
-# =========================
-# END VERIFY EMBED EDIT AREA
-# =========================
 
 
 class VerifyView(discord.ui.View):
@@ -68,11 +59,9 @@ class Verification(commands.Cog):
         self.bot = bot
         bot.add_view(VerifyView())
 
-    @app_commands.command(
-        name="verify-panel",
-        description="Send the verification panel.",
-    )
-    async def verify_panel(self, interaction: discord.Interaction):
+    @commands.command(name="verifypanel")
+    @commands.has_permissions(administrator=True)
+    async def verifypanel(self, ctx):
         embed = discord.Embed(
             title=VERIFY_TITLE,
             description=VERIFY_DESCRIPTION,
@@ -80,7 +69,12 @@ class Verification(commands.Cog):
         )
         embed.set_footer(text=f"{SERVER_NAME} Verification")
 
-        await interaction.response.send_message(embed=embed, view=VerifyView())
+        await ctx.send(embed=embed, view=VerifyView())
+
+        try:
+            await ctx.message.delete()
+        except discord.HTTPException:
+            pass
 
 
 async def setup(bot):
