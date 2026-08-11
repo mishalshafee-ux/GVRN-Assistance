@@ -89,7 +89,7 @@ class Welcome(commands.Cog):
         )
 
         mark_welcomed(member.id)
-        await channel.send(content=member.mention, embed=embed)
+        await channel.send(embed=embed)
 
 
 async def setup(bot):
