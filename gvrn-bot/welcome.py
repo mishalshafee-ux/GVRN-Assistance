@@ -12,6 +12,7 @@ VERIFICATION_CHANNEL_ID = int(os.getenv("VERIFICATION_CHANNEL_ID", "0"))
 PERMANENT_INVITE_LINK = os.getenv("PERMANENT_INVITE_LINK", "")
 
 WELCOME_CACHE_FILE = Path("welcome_cache.json")
+_WELCOME_DEDUPE = {}
 
 SERVER_NAME = "GVRN"
 WELCOME_COLOR = 0x76F55D
@@ -32,6 +33,12 @@ def save_cache(cache):
 
 
 def recently_welcomed(member_id):
+    now = datetime.now(timezone.utc)
+
+    cached_timestamp = _WELCOME_DEDUPE.get(member_id)
+    if cached_timestamp and now - cached_timestamp < timedelta(minutes=10):
+        return True
+
     cache = load_cache()
     timestamp = cache.get(str(member_id))
 
@@ -39,12 +46,15 @@ def recently_welcomed(member_id):
         return False
 
     welcomed_at = datetime.fromisoformat(timestamp)
-    return datetime.now(timezone.utc) - welcomed_at < timedelta(minutes=10)
+    return now - welcomed_at < timedelta(minutes=10)
 
 
 def mark_welcomed(member_id):
+    now = datetime.now(timezone.utc)
+    _WELCOME_DEDUPE[member_id] = now
+
     cache = load_cache()
-    cache[str(member_id)] = datetime.now(timezone.utc).isoformat()
+    cache[str(member_id)] = now.isoformat()
     save_cache(cache)
 
 
@@ -55,6 +65,11 @@ class Welcome(commands.Cog):
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
         if member.bot:
+            return
+
+        now = datetime.now(timezone.utc)
+        existing = _WELCOME_DEDUPE.get(member.id)
+        if existing and now - existing < timedelta(minutes=10):
             return
 
         if recently_welcomed(member.id):
@@ -88,6 +103,7 @@ class Welcome(commands.Cog):
             color=WELCOME_COLOR,
         )
 
+        _WELCOME_DEDUPE[member.id] = datetime.now(timezone.utc)
         mark_welcomed(member.id)
         await channel.send(embed=embed)
 

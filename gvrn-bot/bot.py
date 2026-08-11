@@ -84,6 +84,7 @@ async def main():
         await bot.load_extension("welcome")
         await bot.load_extension("verification")
         await bot.load_extension("modlog")
+        await bot.load_extension("advertisements")
         await bot.start(TOKEN)
 
 
