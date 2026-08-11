@@ -7,7 +7,7 @@ import discord
 from discord.ext import commands
 
 MODLOG_CHANNEL_ID = int(os.getenv("MODLOG_CHANNEL_ID", "0"))
-ROLE_COMMAND_ROLE_ID = int(os.getenv("ROLE_COMMAND_ROLE_ID", os.getenv("STAFF_COMMAND_ROLE_ID", "0")))
+HIGH_COMMAND_ROLE_ID = int(os.getenv("HIGH_COMMAND_ROLE_ID", "0"))
 
 LOG_FILE = Path("command_logs.json")
 
@@ -23,6 +23,32 @@ def load_logs():
 def save_logs(logs):
     with LOG_FILE.open("w", encoding="utf-8") as file:
         json.dump(logs, file, indent=2)
+
+
+def can_use_role_command(member):
+    if member.guild_permissions.administrator:
+        return True
+
+    return any(role.id == HIGH_COMMAND_ROLE_ID for role in member.roles)
+
+
+async def resolve_member(ctx, user_text):
+    user_id = user_text.strip()
+
+    if user_id.startswith("<@") and user_id.endswith(">"):
+        user_id = user_id.replace("<@", "").replace("!", "").replace(">", "")
+
+    if not user_id.isdigit():
+        return None
+
+    member = ctx.guild.get_member(int(user_id))
+    if member:
+        return member
+
+    try:
+        return await ctx.guild.fetch_member(int(user_id))
+    except discord.HTTPException:
+        return None
 
 
 async def add_log(bot, guild, channel, user, command_name, details):
@@ -52,21 +78,20 @@ async def add_log(bot, guild, channel, user, command_name, details):
             await log_channel.send(embed=embed)
 
 
-def can_use_role_command(member):
-    if member.guild_permissions.administrator:
-        return True
-
-    return any(role.id == ROLE_COMMAND_ROLE_ID for role in member.roles)
-
-
 class ModLog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
     @commands.command(name="role")
-    async def role(self, ctx, member: discord.Member, roles: commands.Greedy[discord.Role], *, reason: str = "No reason provided."):
+    async def role(self, ctx, user_text: str, roles: commands.Greedy[discord.Role], *, reason: str = "No reason provided."):
         if not can_use_role_command(ctx.author):
-            await ctx.send("You do not have permission to use this command.")
+            await ctx.send("You need High Command+ to use this command.")
+            return
+
+        member = await resolve_member(ctx, user_text)
+
+        if member is None:
+            await ctx.send("Could not find that user. Use a mention or user ID.")
             return
 
         if not roles:
@@ -104,12 +129,20 @@ class ModLog(commands.Cog):
             pass
 
     @commands.command(name="modlog")
-    async def modlog(self, ctx):
+    async def modlog(self, ctx, user_text: str = None):
         if not can_use_role_command(ctx.author):
-            await ctx.send("You do not have permission to use this command.")
+            await ctx.send("You need High Command+ to use this command.")
             return
 
         logs = load_logs()
+
+        if user_text:
+            member = await resolve_member(ctx, user_text)
+            if member is None:
+                await ctx.send("Could not find that user. Use a mention or user ID.")
+                return
+
+            logs = [log for log in logs if str(log.get("user_id")) == str(member.id)]
 
         if not logs:
             await ctx.send("No logs found.")
@@ -127,7 +160,7 @@ class ModLog(commands.Cog):
             filename="modlog.txt",
         )
 
-        await ctx.send("Here are all command logs:", file=file)
+        await ctx.send("Here are the command logs:", file=file)
 
     @commands.Cog.listener()
     async def on_command_completion(self, ctx):
