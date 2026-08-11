@@ -2,7 +2,7 @@ import asyncio
 import os
 
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -16,21 +16,32 @@ if not TOKEN:
 intents = discord.Intents.default()
 intents.guilds = True
 intents.members = True
-intents.message_content = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 
-@bot.event
-async def on_ready():
+async def update_presence():
+    member_count = 0
+
+    for guild in bot.guilds:
+        member_count += guild.member_count or 0
+
     await bot.change_presence(
         status=discord.Status.dnd,
         activity=discord.Activity(
             type=discord.ActivityType.watching,
-            name="GVRN Assistance",
+            name=f"over {member_count} members",
         ),
     )
 
+
+@tasks.loop(minutes=10)
+async def presence_loop():
+    await update_presence()
+
+
+@bot.event
+async def on_ready():
     if GUILD_ID:
         guild = discord.Object(id=GUILD_ID)
         bot.tree.copy_global_to(guild=guild)
@@ -40,7 +51,22 @@ async def on_ready():
         synced = await bot.tree.sync()
         print(f"Synced {len(synced)} global commands")
 
+    await update_presence()
+
+    if not presence_loop.is_running():
+        presence_loop.start()
+
     print(f"Logged in as {bot.user}")
+
+
+@bot.event
+async def on_member_join(member):
+    await update_presence()
+
+
+@bot.event
+async def on_member_remove(member):
+    await update_presence()
 
 
 async def main():
