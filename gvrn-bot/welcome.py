@@ -6,6 +6,7 @@ from discord.ext import commands
 WELCOME_CHANNEL_ID = int(os.getenv("WELCOME_CHANNEL_ID", "0"))
 ASSISTANCE_CHANNEL_ID = int(os.getenv("ASSISTANCE_CHANNEL_ID", "0"))
 VERIFICATION_CHANNEL_ID = int(os.getenv("VERIFICATION_CHANNEL_ID", "0"))
+PERMANENT_INVITE_LINK = os.getenv("PERMANENT_INVITE_LINK", "")
 
 # =========================
 # WELCOME MESSAGE EDIT AREA
@@ -27,6 +28,9 @@ class Welcome(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
+        if member.bot:
+            return
+
         channel = member.guild.get_channel(WELCOME_CHANNEL_ID)
 
         if not isinstance(channel, discord.TextChannel):
