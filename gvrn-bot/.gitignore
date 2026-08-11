@@ -1,0 +1,6 @@
+.env
+__pycache__/
+**pycache**/
+*.pyc
+vehicle_data.json
+session_state.json
