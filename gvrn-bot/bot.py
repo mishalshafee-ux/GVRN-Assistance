@@ -83,7 +83,6 @@ async def main():
         await bot.load_extension("staff_adjustment")
         await bot.load_extension("welcome")
         await bot.load_extension("verification")
-        await bot.load_extension("modlog")
         await bot.load_extension("advertisements")
         await bot.load_extension("applications")
         await bot.load_extension("session_info")
