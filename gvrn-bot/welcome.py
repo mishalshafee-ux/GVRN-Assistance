@@ -9,10 +9,9 @@ from discord.ext import commands
 WELCOME_CHANNEL_ID = int(os.getenv("WELCOME_CHANNEL_ID", "0"))
 ASSISTANCE_CHANNEL_ID = int(os.getenv("ASSISTANCE_CHANNEL_ID", "0"))
 VERIFICATION_CHANNEL_ID = int(os.getenv("VERIFICATION_CHANNEL_ID", "0"))
-PERMANENT_INVITE_LINK = os.getenv("PERMANENT_INVITE_LINK", "")
 
 WELCOME_CACHE_FILE = Path("welcome_cache.json")
-_WELCOME_DEDUPE = {}
+WELCOME_DEDUPE = {}
 
 SERVER_NAME = "GVRN"
 WELCOME_COLOR = 0x76F55D
@@ -35,7 +34,7 @@ def save_cache(cache):
 def recently_welcomed(member_id):
     now = datetime.now(timezone.utc)
 
-    cached_timestamp = _WELCOME_DEDUPE.get(member_id)
+    cached_timestamp = WELCOME_DEDUPE.get(member_id)
     if cached_timestamp and now - cached_timestamp < timedelta(minutes=10):
         return True
 
@@ -51,7 +50,7 @@ def recently_welcomed(member_id):
 
 def mark_welcomed(member_id):
     now = datetime.now(timezone.utc)
-    _WELCOME_DEDUPE[member_id] = now
+    WELCOME_DEDUPE[member_id] = now
 
     cache = load_cache()
     cache[str(member_id)] = now.isoformat()
@@ -67,11 +66,6 @@ class Welcome(commands.Cog):
         if member.bot:
             return
 
-        now = datetime.now(timezone.utc)
-        existing = _WELCOME_DEDUPE.get(member.id)
-        if existing and now - existing < timedelta(minutes=10):
-            return
-
         if recently_welcomed(member.id):
             return
 
@@ -83,29 +77,23 @@ class Welcome(commands.Cog):
         assistance = f"<#{ASSISTANCE_CHANNEL_ID}>" if ASSISTANCE_CHANNEL_ID else "assistance"
         verification = f"<#{VERIFICATION_CHANNEL_ID}>" if VERIFICATION_CHANNEL_ID else "verification"
 
-        invite_text = ""
-        if PERMANENT_INVITE_LINK:
-            invite_text = f"\nPermanent Invite: {PERMANENT_INVITE_LINK}"
-
         embed = discord.Embed(
             title=WELCOME_TITLE,
             description=(
                 f"> 🌐 Welcome to **{SERVER_NAME}**. We are a community that strives for an enjoyable "
                 f"roleplay experience while keeping everything organized and professional.\n\n"
-                f"> Thank you for joining **{SERVER_NAME}**. We are excited to roleplay with you and "
+                f"> 🌐 Thank you for joining **{SERVER_NAME}**. We are excited to roleplay with you and "
                 f"we have a lot planned for the future, so make sure to stick around!\n\n"
                 f"> ❔ If you require support or want to partner, open a ticket in {assistance} "
                 f"and our team will assist you.\n\n"
                 f"> 👥 Please make sure to verify yourself in {verification} to gain access to the rest of the server.\n\n"
                 f"> -# You are member **{member.guild.member_count}**. Thanks for joining!"
-                f"{invite_text}"
             ),
             color=WELCOME_COLOR,
         )
 
-        _WELCOME_DEDUPE[member.id] = datetime.now(timezone.utc)
         mark_welcomed(member.id)
-        await channel.send(embed=embed)
+        await channel.send(content=member.mention, embed=embed)
 
 
 async def setup(bot):
