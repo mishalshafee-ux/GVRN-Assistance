@@ -7,6 +7,7 @@ import discord
 from discord.ext import commands
 
 WELCOME_CHANNEL_ID = int(os.getenv("WELCOME_CHANNEL_ID", "0"))
+UNVERIFIED_ROLE_ID = int(os.getenv("UNVERIFIED_ROLE_ID", "0"))
 ASSISTANCE_CHANNEL_ID = int(os.getenv("ASSISTANCE_CHANNEL_ID", "0"))
 VERIFICATION_CHANNEL_ID = int(os.getenv("VERIFICATION_CHANNEL_ID", "0"))
 
@@ -65,6 +66,13 @@ class Welcome(commands.Cog):
     async def on_member_join(self, member: discord.Member):
         if member.bot:
             return
+
+        unverified_role = member.guild.get_role(UNVERIFIED_ROLE_ID)
+        if unverified_role:
+            try:
+                await member.add_roles(unverified_role, reason="New member joined.")
+            except discord.Forbidden:
+                pass
 
         if recently_welcomed(member.id):
             return
