@@ -7,17 +7,17 @@ INFRACTION_LOG_CHANNEL_ID = int(os.getenv("INFRACTION_LOG_CHANNEL_ID", "0"))
 INFRACTION_1_ROLE_ID = int(os.getenv("INFRACTION_1_ROLE_ID", "0"))
 INFRACTION_2_ROLE_ID = int(os.getenv("INFRACTION_2_ROLE_ID", "0"))
 INFRACTION_3_ROLE_ID = int(os.getenv("INFRACTION_3_ROLE_ID", "0"))
-HIGH_COMMAND_ROLE_ID = int(os.getenv("HIGH_COMMAND_ROLE_ID", "0"))
+INFRACTION_COMMAND_ROLE_ID = int(os.getenv("INFRACTION_COMMAND_ROLE_ID", "0"))
 
 INFRACTION_COLOR = 0x76F55D
 INFRACTION_APPEAL_TEXT = os.getenv("INFRACTION_APPEAL_TEXT", "appeal here")
 INFRACTION_SERVER_NAME = "Greenville Community Roleplay"
 
 
-def is_high_command(member: discord.Member) -> bool:
+def can_issue_infraction(member: discord.Member) -> bool:
     if member.guild_permissions.administrator:
         return True
-    return any(role.id == HIGH_COMMAND_ROLE_ID for role in member.roles)
+    return any(role.id == INFRACTION_COMMAND_ROLE_ID for role in member.roles)
 
 
 async def resolve_member(ctx, user_text: str):
@@ -53,8 +53,8 @@ class Infractions(commands.Cog):
         self.bot = bot
 
     async def issue_infraction(self, ctx, level: int, user_text: str, reason: str):
-        if not is_high_command(ctx.author):
-            await ctx.send("You need High Command+ to use this command.")
+        if not can_issue_infraction(ctx.author):
+            await ctx.send("You need the Staff Team role to use this command.")
             return
 
         member = await resolve_member(ctx, user_text)
@@ -94,7 +94,7 @@ class Infractions(commands.Cog):
                 f"> • **Dear user, you received an __Infraction__ in GVCR due to:**\n\n"
                 f"Reason & Evidence: **{reason_and_evidence}**\n\n"
                 f"**If you believe that this**\n"
-                f"Infraction **is false, please DM a High Command+ member or appeal {INFRACTION_APPEAL_TEXT}.**\n\n"
+                f"Infraction **is false, please DM a Staff Team member or appeal {INFRACTION_APPEAL_TEXT}.**\n\n"
                 f"**Signed,**\n"
                 f"{ctx.author.mention}"
             ),
@@ -116,10 +116,10 @@ class Infractions(commands.Cog):
                 f"within Greenville Roleplay Network due to the following reason:\n\n"
                 f"• Reason: {reason}\n"
                 f"• Evidence: {chr(10).join(proof_links) if proof_links else 'No evidence provided'}\n\n"
-                f"**If you believe this moderation is false, please talk to a High Command+ member or appeal.**\n\n"
+                f"**If you believe this moderation is false, please talk to a Staff Team member or appeal.**\n\n"
                 f"**Signed,**\n"
                 f"{ctx.author}\n"
-                f"High Command+"
+                f"Staff Team"
             ),
             color=INFRACTION_COLOR,
         )
