@@ -18,7 +18,7 @@ intents.guilds = True
 intents.members = True
 intents.message_content = True
 
-bot = commands.Bot(command_prefix="!", intents=intents)
+bot = commands.Bot(command_prefix=["!", "?"], intents=intents)
 
 
 async def update_presence():
@@ -86,6 +86,8 @@ async def main():
         await bot.load_extension("modlog")
         await bot.load_extension("advertisements")
         await bot.load_extension("applications")
+        await bot.load_extension("session_info")
+        await bot.load_extension("infractions")
         await bot.start(TOKEN)
 
 
