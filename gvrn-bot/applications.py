@@ -110,10 +110,12 @@ def save_statuses(statuses):
         json.dump(statuses, file, indent=2)
 
 
-def build_panel_embed():
+def build_panel_message():
     statuses = load_statuses()
     lines = [
-        "➜ Applications marked with ✅ are **open**. Applications marked with ❌ are **closed**.",
+        "# 💬 Greenville Roleplay Network | Applications 💬",
+        "",
+        f"➜ Applications marked with {OPEN_MARK} are **open**. Applications marked with {CLOSED_MARK} are **closed**.",
         "Please only apply to open applications, as closed applications will not be evaluated.",
         "",
     ]
@@ -126,12 +128,7 @@ def build_panel_embed():
         lines.append("")
 
     lines.append("For any additional questions or concerns, please contact the Application Team.")
-
-    return discord.Embed(
-        title="💬 Greenville Roleplay Network | Applications 💬",
-        description="\n".join(lines),
-        color=PANEL_COLOR,
-    )
+    return "\n".join(lines)
 
 
 class ApplicationPanelView(discord.ui.View):
@@ -266,7 +263,7 @@ class Applications(commands.Cog):
             await ctx.send("Application panel channel not found. Check APPLICATION_PANEL_CHANNEL_ID.")
             return
 
-        message = await channel.send(embed=build_panel_embed(), view=ApplicationPanelView())
+        message = await channel.send(content=build_panel_message(), view=ApplicationPanelView())
 
         statuses = load_statuses()
         statuses["panel_channel_id"] = channel.id
@@ -307,7 +304,7 @@ class Applications(commands.Cog):
             if isinstance(panel_channel, discord.TextChannel):
                 try:
                     panel_message = await panel_channel.fetch_message(panel_message_id)
-                    await panel_message.edit(embed=build_panel_embed(), view=ApplicationPanelView())
+                    await panel_message.edit(content=build_panel_message(), embed=None, view=ApplicationPanelView())
                 except discord.HTTPException:
                     pass
 
