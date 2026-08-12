@@ -4,6 +4,7 @@ import discord
 from discord.ext import commands
 
 VERIFY_ROLE_ID = int(os.getenv("VERIFY_ROLE_ID", "0"))
+UNVERIFIED_ROLE_ID = int(os.getenv("UNVERIFIED_ROLE_ID", "0"))
 
 SERVER_NAME = "GVRN"
 VERIFY_COLOR = 0x76F55D
@@ -39,11 +40,15 @@ class VerifyView(discord.ui.View):
             await interaction.response.send_message("You are already verified.", ephemeral=True)
             return
 
+        unverified_role = interaction.guild.get_role(UNVERIFIED_ROLE_ID)
+
         try:
             await interaction.user.add_roles(role, reason="User verified with button.")
+            if unverified_role and unverified_role in interaction.user.roles:
+                await interaction.user.remove_roles(unverified_role, reason="User verified with button.")
         except discord.Forbidden:
             await interaction.response.send_message(
-                "I cannot give that role. Move my bot role above the verify role.",
+                "I cannot update your roles. Move my bot role above the verify and unverified roles.",
                 ephemeral=True,
             )
             return
