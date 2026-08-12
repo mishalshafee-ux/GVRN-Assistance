@@ -6,3 +6,4 @@ vehicle_data.json
 session_state.json
 command_logs.json
 welcome_cache.json
+infraction_cases.json
