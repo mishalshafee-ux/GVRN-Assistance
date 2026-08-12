@@ -15,8 +15,8 @@ HIGH_COMMAND_ROLE_ID = int(os.getenv("HIGH_COMMAND_ROLE_ID", "0"))
 APPLICATION_DATA_FILE = Path("application_status.json")
 
 PANEL_COLOR = 0x76F55D
-OPEN_MARK = "✅"
-CLOSED_MARK = "❌"
+OPEN_MARK = os.getenv("APP_OPEN_EMOJI", "✅")
+CLOSED_MARK = os.getenv("APP_CLOSED_EMOJI", "❌")
 
 APPLICATIONS = {
     "license": {
@@ -93,7 +93,13 @@ def is_high_command(member: discord.Member) -> bool:
 
 def load_statuses():
     if not APPLICATION_DATA_FILE.exists():
-        return {"license": True, "staff": True, "appeal": True}
+        return {
+            "license": True,
+            "staff": True,
+            "appeal": True,
+            "panel_channel_id": None,
+            "panel_message_id": None,
+        }
 
     with APPLICATION_DATA_FILE.open("r", encoding="utf-8") as file:
         return json.load(file)
@@ -260,7 +266,12 @@ class Applications(commands.Cog):
             await ctx.send("Application panel channel not found. Check APPLICATION_PANEL_CHANNEL_ID.")
             return
 
-        await channel.send(embed=build_panel_embed(), view=ApplicationPanelView())
+        message = await channel.send(embed=build_panel_embed(), view=ApplicationPanelView())
+
+        statuses = load_statuses()
+        statuses["panel_channel_id"] = channel.id
+        statuses["panel_message_id"] = message.id
+        save_statuses(statuses)
 
         try:
             await ctx.message.delete()
@@ -287,6 +298,18 @@ class Applications(commands.Cog):
         statuses = load_statuses()
         statuses[application] = status == "open"
         save_statuses(statuses)
+
+        panel_channel_id = statuses.get("panel_channel_id")
+        panel_message_id = statuses.get("panel_message_id")
+
+        if panel_channel_id and panel_message_id:
+            panel_channel = ctx.guild.get_channel(panel_channel_id)
+            if isinstance(panel_channel, discord.TextChannel):
+                try:
+                    panel_message = await panel_channel.fetch_message(panel_message_id)
+                    await panel_message.edit(embed=build_panel_embed(), view=ApplicationPanelView())
+                except discord.HTTPException:
+                    pass
 
         await ctx.send(f"{APPLICATIONS[application]['name']} is now **{status}**.")
 
