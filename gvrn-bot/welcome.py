@@ -88,14 +88,14 @@ class Welcome(commands.Cog):
         embed = discord.Embed(
             title=WELCOME_TITLE,
             description=(
-                f"> 🌐 Welcome to **{SERVER_NAME}**. We are a community that strives for an enjoyable "
-                f"roleplay experience while keeping everything organized and professional.\n\n"
-                f"> 🌐 Thank you for joining **{SERVER_NAME}**. We are excited to roleplay with you and "
-                f"we have a lot planned for the future, so make sure to stick around!\n\n"
-                f"> ❔ If you require support or want to partner, open a ticket in {assistance} "
-                f"and our team will assist you.\n\n"
-                f"> 👥 Please make sure to verify yourself in {verification} to gain access to the rest of the server.\n\n"
-                f"> -# You are member **{member.guild.member_count}**. Thanks for joining!"
+                f"> Welcome to **{SERVER_NAME}**. We are a community that strives for an enjoyable\n"
+                f"> roleplay experience while keeping everything organized and professional.\n\n"
+                f"> 🌐 Thank you for joining **{SERVER_NAME}**. We are excited to roleplay with you\n"
+                f"> and we have a lot planned for the future, so make sure to stick around!\n\n"
+                f"> 🤝 If you want to partner with us, open a ticket in {assistance}\n"
+                f"> and our team will assist you.\n\n"
+                f"> 🎫 If you require support, open a ticket in {assistance}.\n\n"
+                f"> You are member **{member.guild.member_count}**. Thanks for joining!"
             ),
             color=WELCOME_COLOR,
         )
