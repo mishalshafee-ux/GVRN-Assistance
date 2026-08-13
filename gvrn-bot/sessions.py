@@ -38,7 +38,7 @@ def is_staff(member: discord.Member) -> bool:
     return any(role.id == STAFF_COMMAND_ROLE_ID for role in member.roles)
 
 
-async def clear_bot_embeds(channel: discord.TextChannel, bot_user: discord.ClientUser):
+async def clear_session_embeds(channel: discord.TextChannel, bot_user: discord.ClientUser):
     def should_delete(message: discord.Message):
         return message.author.id == bot_user.id and bool(message.embeds)
 
@@ -112,7 +112,7 @@ class Sessions(commands.Cog):
         await interaction.response.defer(ephemeral=True, thinking=False)
 
         try:
-            await clear_bot_embeds(interaction.channel, self.bot.user)
+            await clear_session_embeds(interaction.channel, self.bot.user)
         except discord.Forbidden:
             await interaction.followup.send(
                 "I need Manage Messages permission to clear old session messages.",

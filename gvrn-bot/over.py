@@ -7,7 +7,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from session_cleanup import clear_bot_embeds
+from session_cleanup import clear_session_embeds
 
 OVER_IMAGE_URL = os.getenv("OVER_IMAGE_URL", "")
 SESSION_STATE_FILE = Path("session_state.json")
@@ -72,7 +72,7 @@ class SessionOver(commands.Cog):
         self.bot = bot
 
     async def clear_session_messages(self, channel):
-        await clear_bot_embeds(channel, self.bot.user)
+        await clear_session_embeds(channel, self.bot.user)
 
     async def post_over(self, channel, user):
         await self.clear_session_messages(channel)
