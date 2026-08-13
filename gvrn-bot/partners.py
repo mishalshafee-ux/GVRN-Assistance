@@ -1,8 +1,8 @@
 import discord
 from discord.ext import commands
 
-DASH_EMOJI = ":dash~1:"
-ARROW_EMOJI = ":arrow~3:"
+DASH_EMOJI = "<:Dash:1533815938804355102>"
+ARROW_EMOJI = "<:arrow:1533216371326980266>"
 
 
 class Partners(commands.Cog):
