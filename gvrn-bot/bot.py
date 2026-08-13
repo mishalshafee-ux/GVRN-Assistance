@@ -89,6 +89,7 @@ async def main():
         await bot.load_extension("infractions")
         await bot.load_extension("role_tools")
         await bot.load_extension("partners")
+        await bot.load_extension("say")
         await bot.start(TOKEN)
 
 
