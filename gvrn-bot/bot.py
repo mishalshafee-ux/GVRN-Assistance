@@ -80,6 +80,8 @@ async def main():
         await bot.load_extension("over")
         await bot.load_extension("staff_adjustment")
         await bot.load_extension("welcome")
+        await bot.load_extension("command_list")
+        await bot.load_extension("partnership_requirements")
         await bot.load_extension("verification")
         await bot.load_extension("advertisements")
         await bot.load_extension("applications")
