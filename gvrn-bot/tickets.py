@@ -7,6 +7,7 @@ from discord.ext import commands
 
 COLOR = 0x76F55D
 MAX_OPEN_TICKETS_PER_USER = int(os.getenv("MAX_OPEN_TICKETS_PER_USER", "1"))
+TICKET_TRANSCRIPT_LOG_CHANNEL_ID = int(os.getenv("TICKET_TRANSCRIPT_LOG_CHANNEL_ID", "0"))
 
 TICKET_TYPES = {
     "marketplace": {
@@ -84,9 +85,15 @@ async def make_transcript(channel):
 
         lines.append(f"[{created}] {message.author}: {content}")
 
+    filename = f"{channel.name}-transcript.txt"
+    transcript_data = "\n".join(lines).encode("utf-8")
+    return filename, transcript_data
+
+
+def transcript_file(filename, transcript_data):
     return discord.File(
-        fp=io.BytesIO("\n".join(lines).encode("utf-8")),
-        filename=f"{channel.name}-transcript.txt",
+        fp=io.BytesIO(transcript_data),
+        filename=filename,
     )
 
 
@@ -187,16 +194,28 @@ class CloseTicketButton(discord.ui.Button):
         owner_id = int(data.get("ticket-owner", "0"))
         opener = interaction.guild.get_member(owner_id)
 
-        transcript = await make_transcript(interaction.channel)
+        filename, transcript_data = await make_transcript(interaction.channel)
 
         if opener:
             try:
                 await opener.send(
                     content=f"Here is your ticket transcript from **{interaction.guild.name}**.",
-                    file=transcript,
+                    file=transcript_file(filename, transcript_data),
                 )
             except discord.Forbidden:
                 await interaction.followup.send("Could not DM the ticket opener.", ephemeral=True)
+
+        log_channel = interaction.guild.get_channel(TICKET_TRANSCRIPT_LOG_CHANNEL_ID)
+        if isinstance(log_channel, discord.TextChannel):
+            await log_channel.send(
+                content=(
+                    f"Ticket transcript: **#{interaction.channel.name}**\n"
+                    f"Opened by: <@{owner_id}>\n"
+                    f"Closed by: {interaction.user.mention}"
+                ),
+                file=transcript_file(filename, transcript_data),
+                allowed_mentions=discord.AllowedMentions(users=True),
+            )
 
         await interaction.channel.delete(reason=f"Ticket closed by {interaction.user}.")
 
