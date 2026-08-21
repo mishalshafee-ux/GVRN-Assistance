@@ -1,174 +1,247 @@
+import io
 import os
+from datetime import datetime, timezone
 
 import discord
 from discord.ext import commands
 
-MARKETPLACE_TICKET_CATEGORY_ID = int(os.getenv("MARKETPLACE_TICKET_CATEGORY_ID", "0"))
-GENERAL_TICKET_CATEGORY_ID = int(os.getenv("GENERAL_TICKET_CATEGORY_ID", "0"))
-REPORT_TICKET_CATEGORY_ID = int(os.getenv("REPORT_TICKET_CATEGORY_ID", "0"))
-
-MARKETPLACE_STAFF_ROLE_ID = int(os.getenv("MARKETPLACE_STAFF_ROLE_ID", "0"))
-GENERAL_STAFF_ROLE_ID = int(os.getenv("GENERAL_STAFF_ROLE_ID", "0"))
-REPORT_STAFF_ROLE_ID = int(os.getenv("REPORT_STAFF_ROLE_ID", "0"))
+COLOR = 0x76F55D
 MAX_OPEN_TICKETS_PER_USER = int(os.getenv("MAX_OPEN_TICKETS_PER_USER", "1"))
-
-# =========================
-# PANEL TEXT EDIT AREA
-# =========================
-
-SERVER_NAME = "GVRN"
-PANEL_TITLE = "GVRN Support Centre"
-PANEL_BANNER_URL = ""
-PANEL_COLOR = 0x76F55D
-
-PANEL_DESCRIPTION = (
-    "If you have questions, encounter a bug, or need assistance, "
-    "our support team is here for you. Open a ticket and we will respond as quickly as possible."
-)
-
-MARKETPLACE_PANEL_NAME = "Marketplace Support"
-MARKETPLACE_PANEL_TEXT = (
-    "For marketplace listings, paid services, items, or payment questions.\n\n"
-    "~ Paid ads\n"
-    "~ Sponsored giveaways\n"
-    "~ Payment questions\n"
-    "~ Marketplace listings"
-)
-
-GENERAL_PANEL_NAME = "General Support"
-GENERAL_PANEL_TEXT = (
-    "For general questions, help, concerns, or server support.\n\n"
-    "~ General questions\n"
-    "~ Server help\n"
-    "~ Partnership questions\n"
-    "~ Other concerns"
-)
-
-REPORT_PANEL_NAME = "Report Support"
-REPORT_PANEL_TEXT = (
-    "For reporting players, staff, rule violations, or safety concerns.\n\n"
-    "~ Player report\n"
-    "~ Staff report\n"
-    "~ Rule violation\n"
-    "~ Safety concern"
-)
-
-# =========================
-# END PANEL TEXT EDIT AREA
-# =========================
 
 TICKET_TYPES = {
     "marketplace": {
-        "label": MARKETPLACE_PANEL_NAME,
+        "label": "Marketplace",
         "emoji": "🛒",
-        "button_style": discord.ButtonStyle.primary,
-        "channel_prefix": "marketplace",
-        "category_id": MARKETPLACE_TICKET_CATEGORY_ID,
-        "staff_role_id": MARKETPLACE_STAFF_ROLE_ID,
-        "panel_text": MARKETPLACE_PANEL_TEXT,
+        "category_id": int(os.getenv("MARKETPLACE_TICKET_CATEGORY_ID", "0")),
+        "staff_role_id": int(os.getenv("MARKETPLACE_STAFF_ROLE_ID", "0")),
+        "prefix": "marketplace",
+        "description": "Marketplace listings, paid services, items, or payment questions.",
     },
     "general": {
-        "label": GENERAL_PANEL_NAME,
-        "emoji": "📋",
-        "button_style": discord.ButtonStyle.success,
-        "channel_prefix": "general",
-        "category_id": GENERAL_TICKET_CATEGORY_ID,
-        "staff_role_id": GENERAL_STAFF_ROLE_ID,
-        "panel_text": GENERAL_PANEL_TEXT,
+        "label": "General",
+        "emoji": "❔",
+        "category_id": int(os.getenv("GENERAL_TICKET_CATEGORY_ID", "0")),
+        "staff_role_id": int(os.getenv("GENERAL_STAFF_ROLE_ID", "0")),
+        "prefix": "general",
+        "description": "General questions, support, partnerships, or other concerns.",
     },
     "report": {
-        "label": REPORT_PANEL_NAME,
+        "label": "Report",
         "emoji": "🚨",
-        "button_style": discord.ButtonStyle.danger,
-        "channel_prefix": "report",
-        "category_id": REPORT_TICKET_CATEGORY_ID,
-        "staff_role_id": REPORT_STAFF_ROLE_ID,
-        "panel_text": REPORT_PANEL_TEXT,
+        "category_id": int(os.getenv("REPORT_TICKET_CATEGORY_ID", "0")),
+        "staff_role_id": int(os.getenv("REPORT_STAFF_ROLE_ID", "0")),
+        "prefix": "report",
+        "description": "Player reports, staff reports, rule violations, or safety concerns.",
     },
 }
 
 
-def build_panel_embed():
-    embed = discord.Embed(
-        title=PANEL_TITLE,
-        description=PANEL_DESCRIPTION,
-        color=PANEL_COLOR,
+def parse_topic(topic: str | None):
+    data = {}
+    if not topic:
+        return data
+
+    for part in topic.split("|"):
+        if ":" in part:
+            key, value = part.strip().split(":", 1)
+            data[key.strip()] = value.strip()
+    return data
+
+
+def make_topic(owner_id: int, ticket_type: str, claimed_by: int = 0):
+    return f"ticket-owner:{owner_id}|ticket-type:{ticket_type}|claimed-by:{claimed_by}"
+
+
+def has_staff_access(member: discord.Member, staff_role_id: int):
+    if member.guild_permissions.manage_channels:
+        return True
+    return any(role.id == staff_role_id for role in member.roles)
+
+
+async def make_transcript(channel: discord.TextChannel):
+    lines = [
+        f"Transcript for #{channel.name}",
+        f"Channel ID: {channel.id}",
+        f"Created: {datetime.now(timezone.utc).isoformat()}",
+        "-" * 50,
+    ]
+
+    async for message in channel.history(limit=None, oldest_first=True):
+        created = message.created_at.strftime("%Y-%m-%d %H:%M:%S UTC")
+        content = message.content or ""
+
+        if message.attachments:
+            attachments = " ".join(a.url for a in message.attachments)
+            content = f"{content} [Attachments: {attachments}]".strip()
+
+        if message.embeds:
+            content = f"{content} [Embed sent]".strip()
+
+        lines.append(f"[{created}] {message.author}: {content}")
+
+    transcript = "\n".join(lines)
+    return discord.File(
+        fp=io.BytesIO(transcript.encode("utf-8")),
+        filename=f"{channel.name}-transcript.txt",
     )
 
-    if PANEL_BANNER_URL:
-        embed.set_image(url=PANEL_BANNER_URL)
 
-    for ticket in TICKET_TYPES.values():
-        embed.add_field(
-            name=ticket["label"],
-            value=ticket["panel_text"],
-            inline=False,
-        )
-
-    embed.set_footer(text=f"{SERVER_NAME} Tickets")
-    return embed
-
-
-class CloseTicketView(discord.ui.View):
-    def __init__(self):
+class TicketControls(discord.ui.View):
+    def __init__(self, ticket_type: str, claimed_by: int = 0):
         super().__init__(timeout=None)
+        self.ticket_type = ticket_type
+        self.claimed_by = claimed_by
 
-    @discord.ui.button(
-        label="Close Ticket",
-        style=discord.ButtonStyle.danger,
-        custom_id="close_ticket_button",
-    )
-    async def close_ticket(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_message("Closing ticket...", ephemeral=True)
-        await interaction.channel.delete(reason=f"Closed by {interaction.user}")
+        if claimed_by:
+            self.add_item(UnclaimButton(ticket_type))
+        else:
+            self.add_item(ClaimButton(ticket_type))
+
+        self.add_item(CloseTicketButton(ticket_type))
 
 
-class TicketButton(discord.ui.Button):
-    def __init__(self, ticket_key, ticket):
+class ClaimButton(discord.ui.Button):
+    def __init__(self, ticket_type: str):
         super().__init__(
-            label=ticket["label"],
-            emoji=ticket["emoji"],
-            style=ticket["button_style"],
-            custom_id=f"ticket_button_{ticket_key}",
+            label="Claim",
+            style=discord.ButtonStyle.success,
+            custom_id=f"ticket_claim:{ticket_type}",
         )
-        self.ticket_key = ticket_key
+        self.ticket_type = ticket_type
 
     async def callback(self, interaction: discord.Interaction):
+        config = TICKET_TYPES[self.ticket_type]
+
+        if not has_staff_access(interaction.user, config["staff_role_id"]):
+            await interaction.response.send_message("Only ticket staff can claim this ticket.", ephemeral=True)
+            return
+
+        data = parse_topic(interaction.channel.topic)
+        owner_id = int(data.get("ticket-owner", "0"))
+
+        await interaction.channel.edit(
+            topic=make_topic(owner_id, self.ticket_type, interaction.user.id),
+            reason="Ticket claimed.",
+        )
+
+        await interaction.response.edit_message(view=TicketControls(self.ticket_type, interaction.user.id))
+        await interaction.channel.send(f"✅ This ticket has been claimed by {interaction.user.mention}.")
+
+
+class UnclaimButton(discord.ui.Button):
+    def __init__(self, ticket_type: str):
+        super().__init__(
+            label="Unclaim",
+            style=discord.ButtonStyle.secondary,
+            custom_id=f"ticket_unclaim:{ticket_type}",
+        )
+        self.ticket_type = ticket_type
+
+    async def callback(self, interaction: discord.Interaction):
+        config = TICKET_TYPES[self.ticket_type]
+
+        if not has_staff_access(interaction.user, config["staff_role_id"]):
+            await interaction.response.send_message("Only ticket staff can unclaim this ticket.", ephemeral=True)
+            return
+
+        data = parse_topic(interaction.channel.topic)
+        owner_id = int(data.get("ticket-owner", "0"))
+
+        await interaction.channel.edit(
+            topic=make_topic(owner_id, self.ticket_type, 0),
+            reason="Ticket unclaimed.",
+        )
+
+        await interaction.response.edit_message(view=TicketControls(self.ticket_type, 0))
+        await interaction.channel.send(f"↩️ This ticket has been unclaimed by {interaction.user.mention}.")
+
+
+class CloseTicketButton(discord.ui.Button):
+    def __init__(self, ticket_type: str):
+        super().__init__(
+            label="Close Ticket",
+            style=discord.ButtonStyle.danger,
+            custom_id=f"ticket_close:{ticket_type}",
+        )
+        self.ticket_type = ticket_type
+
+    async def callback(self, interaction: discord.Interaction):
+        config = TICKET_TYPES[self.ticket_type]
+
+        if not has_staff_access(interaction.user, config["staff_role_id"]):
+            await interaction.response.send_message("Only ticket staff can close this ticket.", ephemeral=True)
+            return
+
+        await interaction.response.send_message("Closing ticket and sending transcript...", ephemeral=True)
+
+        data = parse_topic(interaction.channel.topic)
+        owner_id = int(data.get("ticket-owner", "0"))
+        opener = interaction.guild.get_member(owner_id)
+
+        transcript = await make_transcript(interaction.channel)
+
+        if opener:
+            try:
+                await opener.send(
+                    content=f"Here is your ticket transcript from **{interaction.guild.name}**.",
+                    file=transcript,
+                )
+            except discord.Forbidden:
+                await interaction.followup.send(
+                    "I could not DM the ticket opener. Their DMs may be closed.",
+                    ephemeral=True,
+                )
+
+        await interaction.channel.delete(reason=f"Ticket closed by {interaction.user}.")
+
+
+class TicketSelect(discord.ui.Select):
+    def __init__(self):
+        options = [
+            discord.SelectOption(
+                label=config["label"],
+                value=key,
+                emoji=config["emoji"],
+                description=config["description"][:100],
+            )
+            for key, config in TICKET_TYPES.items()
+        ]
+
+        super().__init__(
+            placeholder="Select a support type...",
+            options=options,
+            custom_id="ticket_type_select",
+        )
+
+    async def callback(self, interaction: discord.Interaction):
+        ticket_type = self.values[0]
+        config = TICKET_TYPES[ticket_type]
         guild = interaction.guild
         user = interaction.user
 
-        if guild is None or not isinstance(user, discord.Member):
-            await interaction.response.send_message("Use this in a server.", ephemeral=True)
-            return
-
-        ticket = TICKET_TYPES[self.ticket_key]
-        category = guild.get_channel(ticket["category_id"])
-
-        if not isinstance(category, discord.CategoryChannel):
-            await interaction.response.send_message(
-                "Ticket category not found. Check the category ID in .env.",
-                ephemeral=True,
-            )
-            return
-
-        open_tickets = [
-            channel
-            for ticket_type in TICKET_TYPES.values()
-            for ticket_category in [guild.get_channel(ticket_type["category_id"])]
-            if isinstance(ticket_category, discord.CategoryChannel)
-            for channel in ticket_category.text_channels
-            if channel.topic == f"ticket-owner:{user.id}"
-        ]
+        open_tickets = []
+        for item in TICKET_TYPES.values():
+            category = guild.get_channel(item["category_id"])
+            if isinstance(category, discord.CategoryChannel):
+                for channel in category.text_channels:
+                    data = parse_topic(channel.topic)
+                    if data.get("ticket-owner") == str(user.id):
+                        open_tickets.append(channel)
 
         if len(open_tickets) >= MAX_OPEN_TICKETS_PER_USER:
-            ticket_mentions = ", ".join(channel.mention for channel in open_tickets[:3])
+            mentions = ", ".join(channel.mention for channel in open_tickets[:3])
             await interaction.response.send_message(
-                f"You already have the maximum allowed open ticket(s): {ticket_mentions}",
+                f"You already have the maximum open ticket(s): {mentions}",
                 ephemeral=True,
             )
             return
 
-        staff_role = guild.get_role(ticket["staff_role_id"])
+        category = guild.get_channel(config["category_id"])
+        staff_role = guild.get_role(config["staff_role_id"])
+
+        if not isinstance(category, discord.CategoryChannel):
+            await interaction.response.send_message("Ticket category is not set correctly.", ephemeral=True)
+            return
 
         overwrites = {
             guild.default_role: discord.PermissionOverwrite(view_channel=False),
@@ -177,7 +250,6 @@ class TicketButton(discord.ui.Button):
                 send_messages=True,
                 read_message_history=True,
                 attach_files=True,
-                embed_links=True,
             ),
             guild.me: discord.PermissionOverwrite(
                 view_channel=True,
@@ -195,63 +267,65 @@ class TicketButton(discord.ui.Button):
                 manage_channels=True,
             )
 
-        username = user.name.lower().replace(" ", "-")[:20]
-        channel_name = f"{ticket['channel_prefix']}-{username}"
-
         channel = await guild.create_text_channel(
-            name=channel_name,
+            name=f"{config['prefix']}-{user.name}".lower()[:90],
             category=category,
             overwrites=overwrites,
-            topic=f"ticket-owner:{user.id}",
-            reason=f"Ticket opened by {user}",
+            topic=make_topic(user.id, ticket_type, 0),
+            reason=f"Ticket opened by {user}.",
         )
 
         embed = discord.Embed(
-            title=ticket["label"],
+            title=f"{config['emoji']} {config['label']} Ticket",
             description=(
-                f"Hello {user.mention}, thank you for opening a ticket.\n"
-                f"The needed staff team has been pinged.\n\n"
-                f"{ticket['panel_text']}"
+                f"Hello {user.mention}, staff will help you shortly.\n\n"
+                f"**Reason:** {config['description']}"
             ),
-            color=PANEL_COLOR,
+            color=COLOR,
         )
-        embed.set_footer(text=f"{SERVER_NAME} Support")
 
-        ping_message = user.mention
-
-        if staff_role:
-            ping_message += f" {staff_role.mention}"
-
+        ping = staff_role.mention if staff_role else "@staff"
         await channel.send(
-            ping_message,
+            content=f"{user.mention} {ping}",
             embed=embed,
-            view=CloseTicketView(),
+            view=TicketControls(ticket_type, 0),
+            allowed_mentions=discord.AllowedMentions(users=True, roles=True),
         )
 
-        await interaction.response.send_message(
-            f"Your ticket has been created: {channel.mention}",
-            ephemeral=True,
-        )
+        await interaction.response.send_message(f"Created your ticket: {channel.mention}", ephemeral=True)
 
 
 class TicketPanelView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
-
-        for ticket_key, ticket in TICKET_TYPES.items():
-            self.add_item(TicketButton(ticket_key, ticket))
+        self.add_item(TicketSelect())
 
 
 class Tickets(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        bot.add_view(TicketPanelView())
-        bot.add_view(CloseTicketView())
+
+    async def cog_load(self):
+        self.bot.add_view(TicketPanelView())
+
+        for ticket_type in TICKET_TYPES:
+            self.bot.add_view(TicketControls(ticket_type, 0))
 
     @commands.command(name="ticketpanel")
-    @commands.has_permissions(administrator=True)
-    async def ticketpanel(self, ctx):
-        await ctx.send(embed=build_panel_embed(), view=TicketPanelView())
+    @commands.has_permissions(manage_channels=True)
+    async def ticket_panel(self, ctx):
+        embed = discord.Embed(
+            title="GVRN Support Centre",
+            description=(
+                "If you need assistance, open a ticket and our team will help you.\n\n"
+                "**Marketplace**\nMarketplace listings, paid services, items, or payments.\n\n"
+                "**General**\nGeneral questions, partnerships, or other concerns.\n\n"
+                "**Report**\nPlayer reports, staff reports, rule violations, or safety concerns."
+            ),
+            color=COLOR,
+        )
+
+        await ctx.send(embed=embed, view=TicketPanelView())
 
 
 async def setup(bot):
