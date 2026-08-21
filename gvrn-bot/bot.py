@@ -22,10 +22,8 @@ bot = commands.Bot(command_prefix=["!", "?"], intents=intents)
 
 
 async def update_presence():
-    member_count = 0
-
-    for guild in bot.guilds:
-        member_count += guild.member_count or 0
+    guild = bot.get_guild(GUILD_ID) if GUILD_ID else None
+    member_count = guild.member_count if guild and guild.member_count else 0
 
     await bot.change_presence(
         status=discord.Status.dnd,

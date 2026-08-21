@@ -10,6 +10,7 @@ REPORT_TICKET_CATEGORY_ID = int(os.getenv("REPORT_TICKET_CATEGORY_ID", "0"))
 MARKETPLACE_STAFF_ROLE_ID = int(os.getenv("MARKETPLACE_STAFF_ROLE_ID", "0"))
 GENERAL_STAFF_ROLE_ID = int(os.getenv("GENERAL_STAFF_ROLE_ID", "0"))
 REPORT_STAFF_ROLE_ID = int(os.getenv("REPORT_STAFF_ROLE_ID", "0"))
+MAX_OPEN_TICKETS_PER_USER = int(os.getenv("MAX_OPEN_TICKETS_PER_USER", "1"))
 
 # =========================
 # PANEL TEXT EDIT AREA
@@ -150,14 +151,19 @@ class TicketButton(discord.ui.Button):
             )
             return
 
-        existing = discord.utils.get(
-            category.text_channels,
-            topic=f"ticket-owner:{user.id}",
-        )
+        open_tickets = [
+            channel
+            for ticket_type in TICKET_TYPES.values()
+            for ticket_category in [guild.get_channel(ticket_type["category_id"])]
+            if isinstance(ticket_category, discord.CategoryChannel)
+            for channel in ticket_category.text_channels
+            if channel.topic == f"ticket-owner:{user.id}"
+        ]
 
-        if existing:
+        if len(open_tickets) >= MAX_OPEN_TICKETS_PER_USER:
+            ticket_mentions = ", ".join(channel.mention for channel in open_tickets[:3])
             await interaction.response.send_message(
-                f"You already have an open ticket: {existing.mention}",
+                f"You already have the maximum allowed open ticket(s): {ticket_mentions}",
                 ephemeral=True,
             )
             return
