@@ -46,6 +46,10 @@ def make_code():
     return "GVRN-" + "".join(random.choice(letters) for _ in range(6))
 
 
+def normalize_code_text(value: str):
+    return "".join(character for character in value.upper() if character.isalnum())
+
+
 class RobloxUsernameModal(discord.ui.Modal, title="Roblox Verification"):
     roblox_username = discord.ui.TextInput(
         label="Roblox Username",
@@ -65,7 +69,13 @@ class RobloxUsernameModal(discord.ui.Modal, title="Roblox Verification"):
             )
             return
 
-        code = make_code()
+        pending = PENDING_VERIFICATIONS.get(interaction.user.id)
+
+        if pending and pending.get("roblox_username", "").lower() == profile["name"].lower():
+            code = pending["code"]
+        else:
+            code = make_code()
+
         PENDING_VERIFICATIONS[interaction.user.id] = {
             "code": code,
             "roblox_id": profile["id"],
@@ -107,9 +117,12 @@ class ConfirmRobloxView(discord.ui.View):
 
         description = profile.get("description", "")
 
-        if pending["code"] not in description:
+        saved_code = pending["code"].upper().replace(" ", "")
+        profile_text = description.upper().replace(" ", "")
+
+        if saved_code not in profile_text:
             await interaction.response.send_message(
-                "I could not find the code in your Roblox About/Bio yet.",
+                "I could not find the code in your Roblox About/Bio yet. Make sure it is saved, then wait 30-90 seconds and try again.",
                 ephemeral=True,
             )
             return
