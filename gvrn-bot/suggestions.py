@@ -1,10 +1,11 @@
 import os
 
 import discord
+from discord import app_commands
 from discord.ext import commands
 
 COLOR = 0x76F55D
-SUGGESTION_CHANNEL_ID = int(os.getenv("SUGGESTION_CHANNEL_ID", "0"))
+SUGGESTION_CHANNEL_ID = int(os.getenv("SUGGESTION_CHANNEL_ID", "0") or 0)
 
 
 class SuggestionVoteView(discord.ui.View):
@@ -27,16 +28,13 @@ class Suggestions(commands.Cog):
     async def cog_load(self):
         self.bot.add_view(SuggestionVoteView())
 
-    @commands.command(name="suggest")
-    async def suggest(self, ctx, *, suggestion: str = None):
-        if not suggestion:
-            await ctx.reply("Usage: `!suggest your idea here`", mention_author=False)
-            return
-
-        channel = ctx.guild.get_channel(SUGGESTION_CHANNEL_ID)
+    @app_commands.command(name="suggest", description="Send a suggestion.")
+    @app_commands.describe(suggestion="Your suggestion idea")
+    async def suggest(self, interaction: discord.Interaction, suggestion: str):
+        channel = interaction.guild.get_channel(SUGGESTION_CHANNEL_ID)
 
         if not isinstance(channel, discord.TextChannel):
-            await ctx.reply("Suggestion channel is not set correctly.", mention_author=False)
+            await interaction.response.send_message("Suggestion channel is not set correctly.", ephemeral=True)
             return
 
         embed = discord.Embed(
@@ -44,14 +42,14 @@ class Suggestions(commands.Cog):
             description=suggestion,
             color=COLOR,
         )
-        embed.add_field(name="Suggested By", value=ctx.author.mention, inline=False)
-        embed.set_footer(text=f"User ID: {ctx.author.id}")
+        embed.add_field(name="Suggested By", value=interaction.user.mention, inline=False)
+        embed.set_footer(text=f"User ID: {interaction.user.id}")
 
         message = await channel.send(embed=embed, view=SuggestionVoteView())
         await message.add_reaction("✅")
         await message.add_reaction("❌")
 
-        await ctx.reply(f"Your suggestion was sent: {message.jump_url}", mention_author=False)
+        await interaction.response.send_message(f"Your suggestion was sent: {message.jump_url}", ephemeral=True)
 
 
 async def setup(bot):

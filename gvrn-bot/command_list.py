@@ -30,7 +30,7 @@ class CommandList(commands.Cog):
 
         embed.add_field(
             name="Suggestions",
-            value="`!suggest <idea>` - Sends a suggestion",
+            value="`/suggest` - Sends a suggestion",
             inline=False,
         )
 
