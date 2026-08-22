@@ -16,7 +16,7 @@ class ServerStats(commands.Cog):
     def cog_unload(self):
         self.update_stats.cancel()
 
-    @tasks.loop(minutes=10)
+    @tasks.loop(minutes=1)
     async def update_stats(self):
         guild = self.bot.get_guild(GUILD_ID) if GUILD_ID else None
         if not guild:
@@ -29,6 +29,14 @@ class ServerStats(commands.Cog):
 
         bots = sum(1 for member in guild.members if member.bot)
         humans = sum(1 for member in guild.members if not member.bot)
+
+        await self.bot.change_presence(
+            status=discord.Status.dnd,
+            activity=discord.Activity(
+                type=discord.ActivityType.watching,
+                name=f"over {humans} members",
+            ),
+        )
 
         member_channel = guild.get_channel(SERVER_STATS_MEMBERS_CHANNEL_ID)
         bot_channel = guild.get_channel(SERVER_STATS_BOTS_CHANNEL_ID)
