@@ -90,7 +90,8 @@ async def main():
         await bot.load_extension("role_tools")
         await bot.load_extension("partners")
         await bot.load_extension("say")
-        await bot.start(TOKEN)
+            await bot.load_extension("server_stats")
+    await bot.start(TOKEN)
 
 
 if __name__ == "__main__":
