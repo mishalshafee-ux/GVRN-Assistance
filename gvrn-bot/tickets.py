@@ -146,6 +146,47 @@ class TicketRatingView(discord.ui.View):
             self.add_item(TicketRatingButton(rating, ticket_name, opener_id, closed_by_id))
 
 
+class LowRatingModal(discord.ui.Modal, title="Ticket Feedback"):
+    def __init__(self, rating, ticket_name, opener_id, closed_by_id, rating_view):
+        super().__init__()
+        self.rating = rating
+        self.ticket_name = ticket_name
+        self.opener_id = opener_id
+        self.closed_by_id = closed_by_id
+        self.rating_view = rating_view
+
+        self.feedback = discord.ui.TextInput(
+            label="What went wrong?",
+            style=discord.TextStyle.paragraph,
+            placeholder="Tell us what could have been better.",
+            required=True,
+            max_length=1000,
+        )
+        self.add_item(self.feedback)
+
+    async def on_submit(self, interaction):
+        guild = interaction.client.get_guild(int(os.getenv("GUILD_ID", "0")))
+        if guild:
+            channel = guild.get_channel(TICKET_RATING_LOG_CHANNEL_ID)
+            if isinstance(channel, discord.TextChannel):
+                await channel.send(
+                    f"⭐ **Ticket Rating:** {self.rating}/5\n"
+                    f"Ticket: `{self.ticket_name}`\n"
+                    f"Rated by: {interaction.user.mention}\n"
+                    f"Closed by: <@{self.closed_by_id}>\n"
+                    f"Feedback: {self.feedback.value}",
+                    allowed_mentions=discord.AllowedMentions(users=True),
+                )
+
+        for item in self.rating_view.children:
+            item.disabled = True
+
+        await interaction.response.edit_message(
+            content=f"Thanks for rating your ticket **{self.rating}/5** ⭐. Your feedback was sent.",
+            view=self.rating_view,
+        )
+
+
 class TicketRatingButton(discord.ui.Button):
     def __init__(self, rating, ticket_name, opener_id, closed_by_id):
         super().__init__(
@@ -161,6 +202,18 @@ class TicketRatingButton(discord.ui.Button):
     async def callback(self, interaction):
         if interaction.user.id != self.opener_id:
             await interaction.response.send_message("Only the ticket opener can rate this ticket.", ephemeral=True)
+            return
+
+        if self.rating < 3:
+            await interaction.response.send_modal(
+                LowRatingModal(
+                    self.rating,
+                    self.ticket_name,
+                    self.opener_id,
+                    self.closed_by_id,
+                    self.view,
+                )
+            )
             return
 
         guild = interaction.client.get_guild(int(os.getenv("GUILD_ID", "0")))
