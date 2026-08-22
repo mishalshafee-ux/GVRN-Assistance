@@ -50,7 +50,9 @@ class PartnershipRequirements(commands.Cog):
         if message.author.bot or not message.guild:
             return
 
-        if "partnership" not in message.content.lower():
+        content = message.content.lower()
+
+        if "partnership" not in content and "partner" not in content:
             return
 
         if not is_ticket_channel(message.channel):
