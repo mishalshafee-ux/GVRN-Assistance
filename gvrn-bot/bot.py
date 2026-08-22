@@ -91,6 +91,7 @@ async def main():
         await bot.load_extension("partners")
         await bot.load_extension("say")
         await bot.load_extension("server_stats")
+        await bot.load_extension("suggestions")
     await bot.start(TOKEN)
 
 
