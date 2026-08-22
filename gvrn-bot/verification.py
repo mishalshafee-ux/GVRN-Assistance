@@ -222,13 +222,23 @@ class Verification(commands.Cog):
     @commands.has_permissions(manage_roles=True)
     async def verify_panel(self, ctx):
         embed = discord.Embed(
-            title="GVRN Verification",
+            title="✅ GVRN Verification",
             description=(
-                "Click the button below to verify your Roblox account.\n\n"
-                "Once verified, you will receive the Civilian role."
+                "Welcome to **Greenville Roleplay Network**.\n\n"
+                "To access the server, you must verify your Roblox account. "
+                "Click the button below and enter your Roblox username.\n\n"
+                "**How it works:**\n"
+                "> 1. Click **Verify**.\n"
+                "> 2. Enter your Roblox username.\n"
+                "> 3. Add the code to your Roblox **About/Bio**.\n"
+                "> 4. Click **I Added The Code**.\n\n"
+                "After verification, you will receive the **Civilian** role and your "
+                "**Unverified** role will be removed.\n\n"
+                "You may remove the code from your Roblox bio after you are verified."
             ),
             color=COLOR,
         )
+        embed.set_footer(text="GVRN Verification System")
 
         await ctx.send(embed=embed, view=VerifyPanelView())
 
