@@ -21,6 +21,11 @@ TICKET_TYPES = {
         "prefix": "marketplace",
         "description": "For marketplace listings, paid services, items, or payment questions.",
         "details": ["Paid ads", "Sponsored giveaways", "Payment questions", "Marketplace listings"],
+        "questions": [
+            "What are you needing help with?",
+            "Is this about paid ads, sponsored giveaways, payments, or listings?",
+            "Please provide any proof, screenshots, or links if needed.",
+        ],
     },
     "general": {
         "label": "General Support",
@@ -30,6 +35,11 @@ TICKET_TYPES = {
         "prefix": "general",
         "description": "For general questions, help, concerns, or server support.",
         "details": ["General questions", "Server help", "Partnership questions", "Other concerns"],
+        "questions": [
+            "What do you need help with?",
+            "Please explain your issue clearly.",
+            "Is there anyone specific staff should contact about this?",
+        ],
     },
     "report": {
         "label": "Report Support",
@@ -39,6 +49,12 @@ TICKET_TYPES = {
         "prefix": "report",
         "description": "For reporting players, staff, rule violations, or safety concerns.",
         "details": ["Player report", "Staff report", "Rule violation", "Safety concern"],
+        "questions": [
+            "Who are you reporting?",
+            "What rule was broken?",
+            "When did this happen?",
+            "Please send screenshots, clips, or proof.",
+        ],
     },
 }
 
@@ -105,14 +121,17 @@ def transcript_file(filename, transcript_data):
 
 def ticket_embed(user, config):
     details = "\n".join(f"~ {item}" for item in config["details"])
+    questions = "\n".join(f"**{index}.** {question}" for index, question in enumerate(config["questions"], start=1))
 
     embed = discord.Embed(
         title=config["label"],
         description=(
             f"Hello {user.mention}, thank you for opening a ticket.\n"
-            f"The needed staff team has been pinged\n\n"
+            f"The needed staff team has been pinged.\n\n"
             f"{config['description']}\n\n"
-            f"{details}"
+            f"{details}\n\n"
+            f"**Please answer these questions:**\n"
+            f"{questions}"
         ),
         color=COLOR,
     )
