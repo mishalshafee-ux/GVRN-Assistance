@@ -43,13 +43,56 @@ async def get_roblox_user(username):
 
 
 async def get_roblox_bio(user_id):
-    async with aiohttp.ClientSession() as session:
-        async with session.get(f"https://users.roblox.com/v1/users/{user_id}") as response:
-            if response.status != 200:
-                return ""
+    headers = {
+        "User-Agent": "GVRN-Discord-Bot/1.0",
+        "Accept": "application/json,text/html",
+    }
 
-            data = await response.json()
-            return data.get("description", "") or ""
+    urls = [
+        f"https://users.roblox.com/v1/users/{user_id}",
+        f"https://users.roblox.com/v1/users/{user_id}?_={random.randint(100000, 999999)}",
+    ]
+
+    async with aiohttp.ClientSession(headers=headers) as session:
+        for url in urls:
+            try:
+                async with session.get(url) as response:
+                    if response.status != 200:
+                        continue
+
+                    data = await response.json()
+                    description = data.get("description", "")
+
+                    if description:
+                        return description
+            except Exception:
+                continue
+
+        try:
+            async with session.get(f"https://www.roblox.com/users/{user_id}/profile") as response:
+                if response.status != 200:
+                    return ""
+
+                html = await response.text()
+
+                patterns = [
+                    r'"description":"(.*?)"',
+                    r'"Description":"(.*?)"',
+                    r'<meta name="description" content="(.*?)"',
+                ]
+
+                for pattern in patterns:
+                    match = re.search(pattern, html, re.IGNORECASE | re.DOTALL)
+                    if match:
+                        description = match.group(1)
+                        description = description.replace("\\n", "\n")
+                        description = description.replace("\\u0026", "&")
+                        description = description.replace("\\/", "/")
+                        return description
+        except Exception:
+            return ""
+
+    return ""
 
 
 class VerifyModal(discord.ui.Modal, title="Verify Roblox Account"):
