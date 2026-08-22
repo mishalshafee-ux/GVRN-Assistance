@@ -6,8 +6,11 @@ import discord
 from discord.ext import commands
 
 COLOR = 0x76F55D
+
 MAX_OPEN_TICKETS_PER_USER = int(os.getenv("MAX_OPEN_TICKETS_PER_USER", "1"))
 TICKET_TRANSCRIPT_LOG_CHANNEL_ID = int(os.getenv("TICKET_TRANSCRIPT_LOG_CHANNEL_ID", "0"))
+TICKET_RATING_LOG_CHANNEL_ID = int(os.getenv("TICKET_RATING_LOG_CHANNEL_ID", "0"))
+STAFF_ACTIVITY_LOG_CHANNEL_ID = int(os.getenv("STAFF_ACTIVITY_LOG_CHANNEL_ID", "0"))
 
 TICKET_TYPES = {
     "marketplace": {
@@ -64,6 +67,12 @@ def has_staff_access(member, staff_role_id):
     return any(role.id == staff_role_id for role in member.roles)
 
 
+async def log_staff_activity(guild, text):
+    channel = guild.get_channel(STAFF_ACTIVITY_LOG_CHANNEL_ID)
+    if isinstance(channel, discord.TextChannel):
+        await channel.send(text, allowed_mentions=discord.AllowedMentions.none())
+
+
 async def make_transcript(channel):
     lines = [
         f"Transcript for #{channel.name}",
@@ -91,16 +100,13 @@ async def make_transcript(channel):
 
 
 def transcript_file(filename, transcript_data):
-    return discord.File(
-        fp=io.BytesIO(transcript_data),
-        filename=filename,
-    )
+    return discord.File(fp=io.BytesIO(transcript_data), filename=filename)
 
 
 def ticket_embed(user, config):
     details = "\n".join(f"~ {item}" for item in config["details"])
 
-    return discord.Embed(
+    embed = discord.Embed(
         title=config["label"],
         description=(
             f"Hello {user.mention}, thank you for opening a ticket.\n"
@@ -109,7 +115,54 @@ def ticket_embed(user, config):
             f"{details}"
         ),
         color=COLOR,
-    ).set_footer(text="GVRN Support")
+    )
+    embed.set_footer(text="GVRN Support")
+    return embed
+
+
+class TicketRatingView(discord.ui.View):
+    def __init__(self, ticket_name, opener_id, closed_by_id):
+        super().__init__(timeout=None)
+        for rating in range(1, 6):
+            self.add_item(TicketRatingButton(rating, ticket_name, opener_id, closed_by_id))
+
+
+class TicketRatingButton(discord.ui.Button):
+    def __init__(self, rating, ticket_name, opener_id, closed_by_id):
+        super().__init__(
+            label=f"{rating} ⭐",
+            style=discord.ButtonStyle.secondary,
+            custom_id=f"ticket_rating:{rating}:{opener_id}",
+        )
+        self.rating = rating
+        self.ticket_name = ticket_name
+        self.opener_id = opener_id
+        self.closed_by_id = closed_by_id
+
+    async def callback(self, interaction):
+        if interaction.user.id != self.opener_id:
+            await interaction.response.send_message("Only the ticket opener can rate this ticket.", ephemeral=True)
+            return
+
+        guild = interaction.client.get_guild(int(os.getenv("GUILD_ID", "0")))
+        if guild:
+            channel = guild.get_channel(TICKET_RATING_LOG_CHANNEL_ID)
+            if isinstance(channel, discord.TextChannel):
+                await channel.send(
+                    f"⭐ **Ticket Rating:** {self.rating}/5\n"
+                    f"Ticket: `{self.ticket_name}`\n"
+                    f"Rated by: {interaction.user.mention}\n"
+                    f"Closed by: <@{self.closed_by_id}>",
+                    allowed_mentions=discord.AllowedMentions(users=True),
+                )
+
+        for item in self.view.children:
+            item.disabled = True
+
+        await interaction.response.edit_message(
+            content=f"Thanks for rating your ticket **{self.rating}/5** ⭐",
+            view=self.view,
+        )
 
 
 class TicketControls(discord.ui.View):
@@ -126,11 +179,7 @@ class TicketControls(discord.ui.View):
 
 class ClaimButton(discord.ui.Button):
     def __init__(self, ticket_type):
-        super().__init__(
-            label="Claim",
-            style=discord.ButtonStyle.success,
-            custom_id=f"ticket_claim:{ticket_type}",
-        )
+        super().__init__(label="Claim", style=discord.ButtonStyle.success, custom_id=f"ticket_claim:{ticket_type}")
         self.ticket_type = ticket_type
 
     async def callback(self, interaction):
@@ -146,15 +195,12 @@ class ClaimButton(discord.ui.Button):
         await interaction.channel.edit(topic=make_topic(owner_id, self.ticket_type, interaction.user.id))
         await interaction.response.edit_message(view=TicketControls(self.ticket_type, interaction.user.id))
         await interaction.channel.send(f"✅ This ticket has been claimed by {interaction.user.mention}.")
+        await log_staff_activity(interaction.guild, f"✅ **Ticket Claimed** | `{interaction.channel.name}` by {interaction.user}.")
 
 
 class UnclaimButton(discord.ui.Button):
     def __init__(self, ticket_type):
-        super().__init__(
-            label="Unclaim",
-            style=discord.ButtonStyle.secondary,
-            custom_id=f"ticket_unclaim:{ticket_type}",
-        )
+        super().__init__(label="Unclaim", style=discord.ButtonStyle.secondary, custom_id=f"ticket_unclaim:{ticket_type}")
         self.ticket_type = ticket_type
 
     async def callback(self, interaction):
@@ -170,15 +216,12 @@ class UnclaimButton(discord.ui.Button):
         await interaction.channel.edit(topic=make_topic(owner_id, self.ticket_type, 0))
         await interaction.response.edit_message(view=TicketControls(self.ticket_type, 0))
         await interaction.channel.send(f"↩️ This ticket has been unclaimed by {interaction.user.mention}.")
+        await log_staff_activity(interaction.guild, f"↩️ **Ticket Unclaimed** | `{interaction.channel.name}` by {interaction.user}.")
 
 
 class CloseTicketButton(discord.ui.Button):
     def __init__(self, ticket_type):
-        super().__init__(
-            label="Close Ticket",
-            style=discord.ButtonStyle.danger,
-            custom_id=f"ticket_close:{ticket_type}",
-        )
+        super().__init__(label="Close Ticket", style=discord.ButtonStyle.danger, custom_id=f"ticket_close:{ticket_type}")
         self.ticket_type = ticket_type
 
     async def callback(self, interaction):
@@ -193,6 +236,7 @@ class CloseTicketButton(discord.ui.Button):
         data = parse_topic(interaction.channel.topic)
         owner_id = int(data.get("ticket-owner", "0"))
         opener = interaction.guild.get_member(owner_id)
+        ticket_name = interaction.channel.name
 
         filename, transcript_data = await make_transcript(interaction.channel)
 
@@ -202,6 +246,10 @@ class CloseTicketButton(discord.ui.Button):
                     content=f"Here is your ticket transcript from **{interaction.guild.name}**.",
                     file=transcript_file(filename, transcript_data),
                 )
+                await opener.send(
+                    content="How would you rate the support you received?",
+                    view=TicketRatingView(ticket_name, opener.id, interaction.user.id),
+                )
             except discord.Forbidden:
                 await interaction.followup.send("Could not DM the ticket opener.", ephemeral=True)
 
@@ -209,7 +257,7 @@ class CloseTicketButton(discord.ui.Button):
         if isinstance(log_channel, discord.TextChannel):
             await log_channel.send(
                 content=(
-                    f"Ticket transcript: **#{interaction.channel.name}**\n"
+                    f"Ticket transcript: **#{ticket_name}**\n"
                     f"Opened by: <@{owner_id}>\n"
                     f"Closed by: {interaction.user.mention}"
                 ),
@@ -217,6 +265,7 @@ class CloseTicketButton(discord.ui.Button):
                 allowed_mentions=discord.AllowedMentions(users=True),
             )
 
+        await log_staff_activity(interaction.guild, f"🔒 **Ticket Closed** | `{ticket_name}` by {interaction.user}.")
         await interaction.channel.delete(reason=f"Ticket closed by {interaction.user}.")
 
 
@@ -232,11 +281,7 @@ class TicketSelect(discord.ui.Select):
             for key, config in TICKET_TYPES.items()
         ]
 
-        super().__init__(
-            placeholder="Select a support type...",
-            options=options,
-            custom_id="ticket_type_select",
-        )
+        super().__init__(placeholder="Select a support type...", options=options, custom_id="ticket_type_select")
 
     async def callback(self, interaction):
         ticket_type = self.values[0]
@@ -245,7 +290,6 @@ class TicketSelect(discord.ui.Select):
         user = interaction.user
 
         open_tickets = []
-
         for item in TICKET_TYPES.values():
             category = guild.get_channel(item["category_id"])
             if isinstance(category, discord.CategoryChannel):
@@ -256,10 +300,7 @@ class TicketSelect(discord.ui.Select):
 
         if len(open_tickets) >= MAX_OPEN_TICKETS_PER_USER:
             mentions = ", ".join(channel.mention for channel in open_tickets[:3])
-            await interaction.response.send_message(
-                f"You already have the maximum open ticket(s): {mentions}",
-                ephemeral=True,
-            )
+            await interaction.response.send_message(f"You already have the maximum open ticket(s): {mentions}", ephemeral=True)
             return
 
         category = guild.get_channel(config["category_id"])
@@ -287,6 +328,7 @@ class TicketSelect(discord.ui.Select):
         )
 
         staff_ping = staff_role.mention if staff_role else ""
+
         await channel.send(
             content=f"{user.mention} {staff_ping}",
             embed=ticket_embed(user, config),
@@ -294,6 +336,7 @@ class TicketSelect(discord.ui.Select):
             allowed_mentions=discord.AllowedMentions(users=True, roles=True),
         )
 
+        await log_staff_activity(guild, f"🎟️ **Ticket Opened** | `{channel.name}` by {user} | Type: `{config['label']}`.")
         await interaction.response.send_message(f"Created your ticket: {channel.mention}", ephemeral=True)
 
 
@@ -324,27 +367,17 @@ class Tickets(commands.Cog):
                 "Open a ticket and we will respond as quickly as possible.\n\n"
                 "**Marketplace Support**\n"
                 "For marketplace listings, paid services, items, or payment questions.\n\n"
-                "~ Paid ads\n"
-                "~ Sponsored giveaways\n"
-                "~ Payment questions\n"
-                "~ Marketplace listings\n\n"
+                "~ Paid ads\n~ Sponsored giveaways\n~ Payment questions\n~ Marketplace listings\n\n"
                 "**General Support**\n"
                 "For general questions, help, concerns, or server support.\n\n"
-                "~ General questions\n"
-                "~ Server help\n"
-                "~ Partnership questions\n"
-                "~ Other concerns\n\n"
+                "~ General questions\n~ Server help\n~ Partnership questions\n~ Other concerns\n\n"
                 "**Report Support**\n"
                 "For reporting players, staff, rule violations, or safety concerns.\n\n"
-                "~ Player report\n"
-                "~ Staff report\n"
-                "~ Rule violation\n"
-                "~ Safety concern"
+                "~ Player report\n~ Staff report\n~ Rule violation\n~ Safety concern"
             ),
             color=COLOR,
         )
         embed.set_footer(text="GVRN Tickets")
-
         await ctx.send(embed=embed, view=TicketPanelView())
 
 
