@@ -1,186 +1,193 @@
 import os
 import random
+import re
 import string
 
 import aiohttp
 import discord
 from discord.ext import commands
 
-VERIFY_ROLE_ID = int(os.getenv("VERIFY_ROLE_ID", "0"))
-UNVERIFIED_ROLE_ID = int(os.getenv("UNVERIFIED_ROLE_ID", "0"))
+COLOR = 0x76F55D
 
-SERVER_NAME = "GVRN"
-VERIFY_COLOR = 0x76F55D
-VERIFY_TITLE = "GVRN Verification"
-VERIFY_DESCRIPTION = (
-    "Welcome to **GVRN**.\n\n"
-    "Click the button below to verify your Roblox account and gain access."
-)
-VERIFY_BUTTON_LABEL = "Verify"
+VERIFY_ROLE_ID = int(os.getenv("VERIFY_ROLE_ID", "0") or 0)
+UNVERIFIED_ROLE_ID = int(os.getenv("UNVERIFIED_ROLE_ID", "0") or 0)
 
 PENDING_VERIFICATIONS = {}
 
 
-async def get_roblox_user(username: str):
+def make_code():
+    letters = "".join(random.choices(string.ascii_uppercase + string.digits, k=6))
+    return f"GVRN-{letters}"
+
+
+def normalize_text(text):
+    return re.sub(r"[^A-Z0-9]", "", text.upper())
+
+
+async def get_roblox_user(username):
     async with aiohttp.ClientSession() as session:
         async with session.post(
             "https://users.roblox.com/v1/usernames/users",
-            json={"usernames": [username], "excludeBannedUsers": True},
+            json={"usernames": [username], "excludeBannedUsers": False},
         ) as response:
+            if response.status != 200:
+                return None
+
             data = await response.json()
+            users = data.get("data", [])
 
-        users = data.get("data", [])
-        if not users:
-            return None
+            if not users:
+                return None
 
-        user_id = users[0]["id"]
+            return users[0]
 
+
+async def get_roblox_bio(user_id):
+    async with aiohttp.ClientSession() as session:
         async with session.get(f"https://users.roblox.com/v1/users/{user_id}") as response:
-            profile = await response.json()
+            if response.status != 200:
+                return ""
 
-    return profile
-
-
-def make_code():
-    letters = string.ascii_uppercase + string.digits
-    return "GVRN-" + "".join(random.choice(letters) for _ in range(6))
+            data = await response.json()
+            return data.get("description", "") or ""
 
 
-def normalize_code_text(value: str):
-    return "".join(character for character in value.upper() if character.isalnum())
-
-
-class RobloxUsernameModal(discord.ui.Modal, title="Roblox Verification"):
+class VerifyModal(discord.ui.Modal, title="Verify Roblox Account"):
     roblox_username = discord.ui.TextInput(
         label="Roblox Username",
-        placeholder="Example: Mishal734567",
-        max_length=32,
+        placeholder="Enter your Roblox username",
         required=True,
+        max_length=32,
     )
 
     async def on_submit(self, interaction: discord.Interaction):
-        username = str(self.roblox_username.value).strip().replace("@", "")
-        profile = await get_roblox_user(username)
+        username = str(self.roblox_username.value).strip()
+        roblox_user = await get_roblox_user(username)
 
-        if not profile:
+        if not roblox_user:
             await interaction.response.send_message(
                 "I could not find that Roblox username.",
                 ephemeral=True,
             )
             return
 
-        pending = PENDING_VERIFICATIONS.get(interaction.user.id)
-
-        if pending and pending.get("roblox_username", "").lower() == profile["name"].lower():
-            code = pending["code"]
-        else:
-            code = make_code()
+        code = PENDING_VERIFICATIONS.get(interaction.user.id, {}).get("code") or make_code()
 
         PENDING_VERIFICATIONS[interaction.user.id] = {
             "code": code,
-            "roblox_id": profile["id"],
-            "roblox_username": profile["name"],
+            "roblox_id": roblox_user["id"],
+            "roblox_username": roblox_user["name"],
         }
 
         await interaction.response.send_message(
             (
-                f"To verify **{profile['name']}**, put this code in your Roblox profile About/Bio:\n\n"
+                f"To verify **{roblox_user['name']}**, put this code in your Roblox profile About/Bio:\n\n"
                 f"`{code}`\n\n"
-                f"After adding it, click **I Added The Code** below."
+                "After adding it, wait **30-90 seconds**, then click **I Added The Code** below.\n"
+                "You can remove the code after you are verified."
             ),
-            view=ConfirmRobloxView(),
+            view=ConfirmVerifyView(),
             ephemeral=True,
         )
 
 
-class ConfirmRobloxView(discord.ui.View):
+class ConfirmVerifyView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=600)
 
-    @discord.ui.button(label="I Added The Code", style=discord.ButtonStyle.success)
+    @discord.ui.button(
+        label="I Added The Code",
+        style=discord.ButtonStyle.success,
+        custom_id="confirm_roblox_verify",
+    )
     async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
-        if not isinstance(interaction.user, discord.Member) or interaction.guild is None:
-            await interaction.response.send_message("Use this in a server.", ephemeral=True)
-            return
+        data = PENDING_VERIFICATIONS.get(interaction.user.id)
 
-        pending = PENDING_VERIFICATIONS.get(interaction.user.id)
-
-        if not pending:
-            await interaction.response.send_message("Start verification again.", ephemeral=True)
-            return
-
-        profile = await get_roblox_user(pending["roblox_username"])
-
-        if not profile:
-            await interaction.response.send_message("Could not check your Roblox profile.", ephemeral=True)
-            return
-
-        description = profile.get("description", "")
-
-        saved_code = pending["code"].upper().replace(" ", "")
-        profile_text = description.upper().replace(" ", "")
-
-        if saved_code not in profile_text:
+        if not data:
             await interaction.response.send_message(
-                "I could not find the code in your Roblox About/Bio yet. Make sure it is saved, then wait 30-90 seconds and try again.",
+                "Please click Verify again and enter your Roblox username first.",
                 ephemeral=True,
             )
             return
 
-        civilian_role = interaction.guild.get_role(VERIFY_ROLE_ID)
-        unverified_role = interaction.guild.get_role(UNVERIFIED_ROLE_ID)
+        bio = await get_roblox_bio(data["roblox_id"])
+        needed_code = normalize_text(data["code"])
+        visible_bio = normalize_text(bio)
 
-        if civilian_role is None:
-            await interaction.response.send_message("Civilian role was not found.", ephemeral=True)
+        if needed_code not in visible_bio:
+            preview = bio[:150] if bio else "empty bio"
+            await interaction.response.send_message(
+                (
+                    "I still could not find the code in your Roblox About/Bio.\n"
+                    "Make sure it is saved, wait **30-90 seconds**, then try again.\n\n"
+                    f"Code I need: `{data['code']}`\n"
+                    f"Bio I can currently see: `{preview}`"
+                ),
+                ephemeral=True,
+            )
             return
 
-        new_nickname = f"{interaction.user.display_name} (@{profile['name']})"[:32]
+        guild = interaction.guild
+        civilian_role = guild.get_role(VERIFY_ROLE_ID)
+        unverified_role = guild.get_role(UNVERIFIED_ROLE_ID)
+
+        if civilian_role:
+            await interaction.user.add_roles(civilian_role, reason="Roblox account verified.")
+
+        if unverified_role and unverified_role in interaction.user.roles:
+            await interaction.user.remove_roles(unverified_role, reason="Roblox account verified.")
 
         try:
-            await interaction.user.add_roles(civilian_role, reason="Roblox profile verified.")
-            if unverified_role and unverified_role in interaction.user.roles:
-                await interaction.user.remove_roles(unverified_role, reason="Roblox profile verified.")
-            await interaction.user.edit(nick=new_nickname, reason="Roblox profile verified.")
-        except discord.Forbidden:
-            await interaction.response.send_message(
-                "I cannot update your roles or nickname. Check my role position and permissions.",
-                ephemeral=True,
+            await interaction.user.edit(
+                nick=f"{interaction.user.display_name} (@{data['roblox_username']})",
+                reason="Roblox account verified.",
             )
-            return
+        except discord.Forbidden:
+            pass
+        except discord.HTTPException:
+            pass
 
         PENDING_VERIFICATIONS.pop(interaction.user.id, None)
 
         await interaction.response.send_message(
-            f"You have been verified as `{new_nickname}`. You can remove the code from your Roblox profile now.",
+            f"✅ Verified as **{data['roblox_username']}**.",
             ephemeral=True,
         )
 
 
-class VerifyView(discord.ui.View):
+class VerifyPanelView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
 
-    @discord.ui.button(label=VERIFY_BUTTON_LABEL, style=discord.ButtonStyle.success, custom_id="verify_button")
-    async def verify_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_modal(RobloxUsernameModal())
+    @discord.ui.button(
+        label="Verify",
+        style=discord.ButtonStyle.success,
+        custom_id="open_verify_modal",
+    )
+    async def verify(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_modal(VerifyModal())
 
 
 class Verification(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        bot.add_view(VerifyView())
+
+    async def cog_load(self):
+        self.bot.add_view(VerifyPanelView())
 
     @commands.command(name="verifypanel")
-    @commands.has_permissions(administrator=True)
-    async def verifypanel(self, ctx):
-        embed = discord.Embed(title=VERIFY_TITLE, description=VERIFY_DESCRIPTION, color=VERIFY_COLOR)
-        embed.set_footer(text=f"{SERVER_NAME} Verification")
-        await ctx.send(embed=embed, view=VerifyView())
+    @commands.has_permissions(manage_roles=True)
+    async def verify_panel(self, ctx):
+        embed = discord.Embed(
+            title="GVRN Verification",
+            description=(
+                "Click the button below to verify your Roblox account.\n\n"
+                "Once verified, you will receive the Civilian role."
+            ),
+            color=COLOR,
+        )
 
-        try:
-            await ctx.message.delete()
-        except discord.HTTPException:
-            pass
+        await ctx.send(embed=embed, view=VerifyPanelView())
 
 
 async def setup(bot):
