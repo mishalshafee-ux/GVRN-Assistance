@@ -11,10 +11,11 @@ SESSION_DELETE_FOOTERS = {
 
 SESSION_KEEP_FOOTERS = {
     "GVRN Session Information",
+    "Greenville Roleplay Network",
 }
 
 
-def message_footer(message: discord.Message):
+def get_footer(message):
     if not message.embeds:
         return ""
 
@@ -22,11 +23,11 @@ def message_footer(message: discord.Message):
     return footer.text if footer and footer.text else ""
 
 
-def should_delete_session_message(message: discord.Message):
+def should_delete_session_message(message):
     if not message.author.bot:
         return False
 
-    footer = message_footer(message)
+    footer = get_footer(message)
 
     if footer in SESSION_KEEP_FOOTERS:
         return False
@@ -37,10 +38,10 @@ def should_delete_session_message(message: discord.Message):
     return False
 
 
-async def clear_session_messages(channel: discord.TextChannel):
+async def clear_session_messages(channel):
     deleted = 0
 
-    async for message in channel.history(limit=100):
+    async for message in channel.history(limit=75):
         if should_delete_session_message(message):
             try:
                 await message.delete()
@@ -51,13 +52,13 @@ async def clear_session_messages(channel: discord.TextChannel):
     return deleted
 
 
-async def clear_old_session_messages(channel: discord.TextChannel):
+async def clear_session_embeds(channel):
     return await clear_session_messages(channel)
 
 
-async def cleanup_session_messages(channel: discord.TextChannel):
+async def clear_old_session_messages(channel):
     return await clear_session_messages(channel)
 
 
-async def clear_session_embeds(channel: discord.TextChannel):
+async def cleanup_session_messages(channel):
     return await clear_session_messages(channel)

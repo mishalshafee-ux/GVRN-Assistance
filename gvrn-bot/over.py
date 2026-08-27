@@ -84,11 +84,11 @@ class SessionOver(commands.Cog):
     @app_commands.command(name="over", description="Conclude the current roleplay session.")
     async def over_slash(self, interaction: discord.Interaction):
         if not isinstance(interaction.channel, discord.TextChannel):
-            await interaction.response.send_message("Use this in a server text channel.", ephemeral=True)
+            await interaction.followup.send("Use this in a server text channel.", ephemeral=True)
             return
 
         if not is_staff(interaction.user):
-            await interaction.response.send_message(
+            await interaction.followup.send(
                 "You do not have permission to use this command.",
                 ephemeral=True,
             )
