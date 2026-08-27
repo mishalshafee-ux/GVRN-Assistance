@@ -6,15 +6,13 @@ from discord import app_commands
 from discord.ext import commands
 
 from session_cleanup import clear_session_embeds
+from session_state import get_session_start, clear_session_start
 
 COLOR = 0xD3E6FF
 
 OVER_IMAGE_URL = os.getenv("OVER_IMAGE_URL", "")
 SESSION_PING_ROLE_ID = int(os.getenv("SESSION_PING_ROLE_ID", "0") or 0)
 STAFF_COMMAND_ROLE_ID = int(os.getenv("STAFF_COMMAND_ROLE_ID", "0") or 0)
-
-SESSION_START_TIMES = {}
-
 
 def can_use_session_command(member: discord.Member):
     if member.guild_permissions.manage_guild:
@@ -53,7 +51,7 @@ class SessionOver(commands.Cog):
 
         deleted = await clear_session_embeds(interaction.channel)
 
-        started_at = SESSION_START_TIMES.get(interaction.guild.id)
+        started_at = get_session_start(interaction.guild.id)
         duration = duration_text(started_at)
 
         embed = discord.Embed(
@@ -72,6 +70,7 @@ class SessionOver(commands.Cog):
             embed.set_image(url=OVER_IMAGE_URL)
 
         await interaction.channel.send(embed=embed)
+        clear_session_start(interaction.guild.id)
         await interaction.followup.send(f"Session concluded. Removed {deleted} old session message(s).", ephemeral=True)
 
 

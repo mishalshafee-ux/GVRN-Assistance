@@ -7,6 +7,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from session_cleanup import clear_session_embeds
+from session_state import save_session_start
 
 SESSION_PING_ROLE_ID = int(os.getenv("SESSION_PING_ROLE_ID", "0"))
 SESSION_REACTION_EMOJI = os.getenv("SESSION_REACTION_EMOJI", "🤍")
@@ -132,7 +133,8 @@ class Sessions(commands.Cog):
 
         embed.set_footer(text=f"{SERVER_NAME} Sessions")
 
-        message = await interaction.channel.send(
+        message = save_session_start(interaction.guild.id)
+            await interaction.channel.send(
             content=ping_text,
             embed=embed,
             allowed_mentions=discord.AllowedMentions(roles=True, users=True),
