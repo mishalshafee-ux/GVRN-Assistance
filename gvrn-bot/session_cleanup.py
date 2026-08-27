@@ -1,37 +1,59 @@
 import discord
 
-SESSION_CLEANUP_KEYWORDS = [
-    "Roleplay Session Startup",
-    "Roleplay Session Released",
-    "Roleplay Session Reinvites",
-    "Session Reinvites",
-    "Session Released",
-    "Session Setup",
-    "Session Conclusion",
-    "Link Regeneration",
-    "Session Early Access",
-]
+SESSION_DELETE_FOOTERS = {
+    "GVRN Sessions",
+    "GVRN Early Access",
+    "GVRN Session Released",
+    "GVRN Re-Invites",
+    "GVRN Session Concluded",
+    "GVRN Link Regeneration",
+}
+
+SESSION_KEEP_FOOTERS = {
+    "GVRN Session Information",
+}
 
 
-async def clear_session_embeds(channel: discord.TextChannel, bot_user: discord.ClientUser):
-    def should_delete(message: discord.Message):
-        if message.author.id != bot_user.id:
-            return False
+def message_footer(message: discord.Message):
+    if not message.embeds:
+        return ""
 
-        if not message.embeds:
-            return False
+    footer = message.embeds[0].footer
+    return footer.text if footer and footer.text else ""
 
-        text = ""
-        for embed in message.embeds:
-            text += str(embed.title or "")
-            text += str(embed.description or "")
-            text += str(embed.footer.text or "")
 
-        return any(keyword in text for keyword in SESSION_CLEANUP_KEYWORDS)
+def should_delete_session_message(message: discord.Message):
+    if not message.author.bot:
+        return False
 
-    await channel.purge(
-        limit=100,
-        check=should_delete,
-        bulk=True,
-        reason="Clearing old session messages.",
-    )
+    footer = message_footer(message)
+
+    if footer in SESSION_KEEP_FOOTERS:
+        return False
+
+    if footer in SESSION_DELETE_FOOTERS:
+        return True
+
+    return False
+
+
+async def clear_session_messages(channel: discord.TextChannel):
+    deleted = 0
+
+    async for message in channel.history(limit=100):
+        if should_delete_session_message(message):
+            try:
+                await message.delete()
+                deleted += 1
+            except discord.HTTPException:
+                pass
+
+    return deleted
+
+
+async def clear_old_session_messages(channel: discord.TextChannel):
+    return await clear_session_messages(channel)
+
+
+async def cleanup_session_messages(channel: discord.TextChannel):
+    return await clear_session_messages(channel)
