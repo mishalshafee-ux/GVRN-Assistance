@@ -1,7 +1,5 @@
-import json
 import os
 from datetime import datetime, timezone
-from pathlib import Path
 
 import discord
 from discord import app_commands
@@ -9,103 +7,72 @@ from discord.ext import commands
 
 from session_cleanup import clear_session_embeds
 
+COLOR = 0xD3E6FF
+
 OVER_IMAGE_URL = os.getenv("OVER_IMAGE_URL", "")
-SESSION_STATE_FILE = Path("session_state.json")
+SESSION_PING_ROLE_ID = int(os.getenv("SESSION_PING_ROLE_ID", "0") or 0)
+STAFF_COMMAND_ROLE_ID = int(os.getenv("STAFF_COMMAND_ROLE_ID", "0") or 0)
+
+SESSION_START_TIMES = {}
 
 
-STAFF_COMMAND_ROLE_ID = int(os.getenv("STAFF_COMMAND_ROLE_ID", "0"))
-
-
-def is_staff(member: discord.Member) -> bool:
-    if member.guild_permissions.administrator:
+def can_use_session_command(member: discord.Member):
+    if member.guild_permissions.manage_guild:
         return True
 
     return any(role.id == STAFF_COMMAND_ROLE_ID for role in member.roles)
 
-SERVER_NAME = "GVRN"
-OVER_COLOR = 0xD3E6FF
-OVER_TITLE = "Greenville Community Roleplay - Session Conclusion"
 
-
-def get_session_duration_text():
-    if not SESSION_STATE_FILE.exists():
+def duration_text(started_at):
+    if not started_at:
         return "Unknown"
 
-    with SESSION_STATE_FILE.open("r", encoding="utf-8") as file:
-        data = json.load(file)
+    seconds = int((datetime.now(timezone.utc) - started_at).total_seconds())
+    minutes = max(seconds // 60, 0)
 
-    started_at = datetime.fromisoformat(data["started_at"])
-    now = datetime.now(timezone.utc)
-    minutes = max(int((now - started_at).total_seconds()) // 60, 1)
+    if minutes < 1:
+        return "Less than 1 Minute"
 
-    hours = minutes // 60
-    remaining_minutes = minutes % 60
+    if minutes == 1:
+        return "1 Minute"
 
-    if hours and remaining_minutes:
-        return f"{hours} Hour(s) {remaining_minutes} Minute(s)"
-    if hours:
-        return f"{hours} Hour(s)"
-    return f"{minutes} Minute(s)"
-
-
-def build_over_embed(user):
-    embed = discord.Embed(
-        description=(
-            f"·❤· **{OVER_TITLE}** ·❤·\n\n"
-            f"》 {user.mention} has unfortunately concluded their session! "
-            f"We thank you all for those who attended, and hope to see you in future sessions. "
-            f"Please do **not** ask any staff to host as it may result in punishment.\n\n"
-            f"**Session Duration** {get_session_duration_text()}"
-        ),
-        color=OVER_COLOR,
-    )
-
-    if OVER_IMAGE_URL:
-        embed.set_image(url=OVER_IMAGE_URL)
-
-    embed.set_footer(text=f"{SERVER_NAME} Session Concluded")
-    return embed
+    return f"{minutes} Minutes"
 
 
 class SessionOver(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def clear_session_messages(self, channel):
-        await clear_session_embeds(channel, self.bot.user)
+    @app_commands.command(name="over", description="Conclude the current session.")
+    async def over(self, interaction: discord.Interaction):
+        await interaction.response.defer(ephemeral=True)
 
-    async def post_over(self, channel, user):
-        await self.clear_session_messages(channel)
-        await channel.send(embed=build_over_embed(user))
-
-        if SESSION_STATE_FILE.exists():
-            SESSION_STATE_FILE.unlink()
-
-    @app_commands.command(name="over", description="Conclude the current roleplay session.")
-    async def over_slash(self, interaction: discord.Interaction):
-        if not isinstance(interaction.channel, discord.TextChannel):
-            await interaction.followup.send("Use this in a server text channel.", ephemeral=True)
+        if not can_use_session_command(interaction.user):
+            await interaction.followup.send("You do not have permission to use this command.", ephemeral=True)
             return
 
-        if not is_staff(interaction.user):
-            await interaction.followup.send(
-                "You do not have permission to use this command.",
-                ephemeral=True,
-            )
-            return
+        deleted = await clear_session_embeds(interaction.channel)
 
-        await interaction.response.defer(ephemeral=True, thinking=False)
+        started_at = SESSION_START_TIMES.get(interaction.guild.id)
+        duration = duration_text(started_at)
 
-        try:
-            await self.post_over(interaction.channel, interaction.user)
-        except discord.Forbidden:
-            await interaction.followup.send(
-                "I need Manage Messages permission to delete old session messages.",
-                ephemeral=True,
-            )
-            return
+        embed = discord.Embed(
+            title="Greenville Roleplay Network - Session Conclusion",
+            description=(
+                f"› {interaction.user.mention} has unfortunately concluded their session. "
+                "We thank you all for those who attended, and hope to see you in future sessions. "
+                "Please do **not** ask any staff to host as it may result in punishment.\n\n"
+                f"**Session Duration** {duration}"
+            ),
+            color=COLOR,
+        )
+        embed.set_footer(text="GVRN Session Concluded")
 
-        await interaction.delete_original_response()
+        if OVER_IMAGE_URL:
+            embed.set_image(url=OVER_IMAGE_URL)
+
+        await interaction.channel.send(embed=embed)
+        await interaction.followup.send(f"Session concluded. Removed {deleted} old session message(s).", ephemeral=True)
 
 
 async def setup(bot):
