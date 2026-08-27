@@ -57,3 +57,7 @@ async def clear_old_session_messages(channel: discord.TextChannel):
 
 async def cleanup_session_messages(channel: discord.TextChannel):
     return await clear_session_messages(channel)
+
+
+async def clear_session_embeds(channel: discord.TextChannel):
+    return await clear_session_messages(channel)
