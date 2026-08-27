@@ -42,7 +42,7 @@ class ReInvites(commands.Cog):
         frp_speed="Fail roleplay speed limit.",
         peacetime="Peacetime status.",
         leo_status="Law enforcement status.",
-        session_link="Private server/session link.",
+        session_code="Private server/session code.",
     )
     @app_commands.choices(
         frp_speed=[
@@ -66,7 +66,7 @@ class ReInvites(commands.Cog):
         frp_speed: app_commands.Choice[str],
         peacetime: app_commands.Choice[str],
         leo_status: app_commands.Choice[str],
-        session_link: str,
+        session_code: str,
     ):
         if interaction.guild is None:
             await interaction.response.send_message("Use this in a server.", ephemeral=True)
@@ -89,7 +89,7 @@ class ReInvites(commands.Cog):
             description=(
                 f"❤ **{REINVITES_TITLE}** ❤\n\n"
                 f"▬ {interaction.user.mention} has now released **reinvites** for their session! "
-                f"You are welcome to join using the link found below. Before joining the session, "
+                f"You are welcome to join using the code found below. Before joining the session, "
                 f"ensure you've read the information below regarding the session.\n\n"
                 f"**Roleplay Information**\n\n"
                 f"● **Peacetime Status:** `{peacetime.value}`.\n"
@@ -109,9 +109,9 @@ class ReInvites(commands.Cog):
         view = discord.ui.View(timeout=None)
         view.add_item(
             discord.ui.Button(
-                label="Re-Invites Link",
-                style=discord.ButtonStyle.link,
-                url=session_link,
+                label=f"Code: {session_code}",
+                style=discord.ButtonStyle.secondary,
+                disabled=True,
             )
         )
 

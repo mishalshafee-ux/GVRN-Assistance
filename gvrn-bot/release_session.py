@@ -28,7 +28,7 @@ class ReleaseSession(commands.Cog):
         frp_speed="Fail roleplay speed limit.",
         peacetime="Peacetime status.",
         leo_status="Law enforcement status.",
-        session_link="Private server/session link. Must start with https://",
+        session_code="Private server/session code. Must start with https://",
     )
     @app_commands.choices(
         frp_speed=[
@@ -52,7 +52,7 @@ class ReleaseSession(commands.Cog):
         frp_speed: app_commands.Choice[str],
         peacetime: app_commands.Choice[str],
         leo_status: app_commands.Choice[str],
-        session_link: str,
+        session_code: str,
     ):
         if interaction.guild is None or not isinstance(interaction.user, discord.Member):
             await interaction.response.send_message("Use this in a server.", ephemeral=True)
@@ -66,8 +66,8 @@ class ReleaseSession(commands.Cog):
             await interaction.response.send_message("You do not have permission to use this command.", ephemeral=True)
             return
 
-        if not session_link.startswith(("https://", "http://")):
-            await interaction.response.send_message("Session link must start with `https://`.", ephemeral=True)
+        if not session_code.startswith(("https://", "http://")):
+            await interaction.response.send_message("Session code must start with `https://`.", ephemeral=True)
             return
 
         await interaction.response.defer(ephemeral=True, thinking=False)
@@ -80,7 +80,7 @@ class ReleaseSession(commands.Cog):
                 description=(
                     f"☁ **{RELEASE_TITLE}** ☁\n\n"
                     f"▬ {interaction.user.mention} has now released their session! "
-                    f"You are welcome to join using the link found below. Before joining the session, "
+                    f"You are welcome to join using the code found below. Before joining the session, "
                     f"ensure you've read the information below regarding the session.\n\n"
                     f"**Roleplay Information**\n\n"
                     f"● **Peacetime Status:** `{peacetime.value}`.\n"
@@ -98,7 +98,7 @@ class ReleaseSession(commands.Cog):
             embed.set_footer(text=f"{SERVER_NAME} Session Released")
 
             view = discord.ui.View(timeout=None)
-            view.add_item(discord.ui.Button(label="Session Link", style=discord.ButtonStyle.link, url=session_link))
+            view.add_item(discord.ui.Button(label="Session Code", style=discord.ButtonStyle.link, url=session_link))
 
             await interaction.channel.send(
                 content=content,

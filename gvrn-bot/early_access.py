@@ -28,7 +28,7 @@ EA_COLOR = 0xD3E6FF
 EA_TITLE = "Session Early Access"
 EA_DESCRIPTION = (
     "▬ Early access has been **released for the session**. Nitro Contributors, "
-    "Early Access, and Staff Team members may now join using the link below. "
+    "Early Access, and Staff Team members may now join using the code below. "
     "Sharing this link will result in a permanent removal of your early access permissions.\n\n"
     "➜ Want to join **Early Access?** Become a **Nitro Contributor** or purchase "
     "**Early Access** from **marketplace**!"
