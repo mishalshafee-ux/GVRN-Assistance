@@ -6,6 +6,7 @@ from pathlib import Path
 import discord
 from discord import app_commands
 from discord.ext import commands
+from session_cleanup import clear_session_embeds
 
 SESSION_PING_ROLE_ID = int(os.getenv("SESSION_PING_ROLE_ID", "0"))
 SESSION_REACTION_EMOJI = os.getenv("SESSION_REACTION_EMOJI", "🤍")
@@ -38,16 +39,6 @@ def is_staff(member: discord.Member) -> bool:
     return any(role.id == STAFF_COMMAND_ROLE_ID for role in member.roles)
 
 
-async def clear_session_embeds(channel: discord.TextChannel, bot_user: discord.ClientUser):
-    def should_delete(message: discord.Message):
-        return message.author.id == bot_user.id and bool(message.embeds)
-
-    await channel.purge(
-        limit=100,
-        check=should_delete,
-        bulk=True,
-        reason="Clearing old session bot embeds before startup.",
-    )
 
 
 def save_session_start(host_id, message_id, required_reactions):
@@ -112,7 +103,7 @@ class Sessions(commands.Cog):
         await interaction.response.defer(ephemeral=True, thinking=False)
 
         try:
-            await clear_session_embeds(interaction.channel, self.bot.user)
+            await clear_session_embeds(interaction.channel)
         except discord.Forbidden:
             await interaction.followup.send(
                 "I need Manage Messages permission to clear old session messages.",
