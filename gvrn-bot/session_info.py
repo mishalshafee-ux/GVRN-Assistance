@@ -41,26 +41,25 @@ class SessionInfo(commands.Cog):
             return
 
         if SESSION_INFO_IMAGE_URL:
-            await channel.send(SESSION_INFO_IMAGE_URL)
+            image_embed = discord.Embed(color=COLOR)
+            image_embed.set_image(url=SESSION_INFO_IMAGE_URL)
+            await channel.send(embed=image_embed)
 
         embed = discord.Embed(
-            title="💕 Greenville Roleplay Network — Roleplay Information 💕",
+            title="Greenville Roleplay Network — Roleplay 1",
             description=(
-                "> Welcome to **Greenville Roleplay Network**. Within this channel, staff members "
-                "will host sessions for the community.\n\n"
-                "> Before joining a session, please make sure you read all session information carefully "
-                "and follow all server rules.\n\n"
-                "**Before Joining Sessions:**\n\n"
-                "› Register your vehicle in **/vehicle-registeration**.\n\n"
-                "› Head to support channels if assistance is needed.\n\n"
-                "› Follow staff instructions during all sessions.\n\n"
-                "› Keep roleplay realistic, respectful, and organized.\n\n"
-                "**Session Reminder:**\n\n"
-                "> Failure to follow session rules may result in moderation action."
+                "> • Welcome to **Greenville Roleplay Network - Roleplay 1**. Within this channel, "
+                "**Greenville Roleplay Network** Staff Members will host sessions. Before joining a "
+                "session, ensure to read over community-information.\n\n"
+                "**Before Joining Sessions:**\n"
+                "› Ensure to register your vehicles within **/vehicle-registeration**.\n"
+                "› Head to support channels if assistance is needed.\n"
+                "› Follow all server and session rules.\n"
+                "› Listen to staff instructions at all times."
             ),
             color=COLOR,
         )
-        embed.set_footer(text="GVRN Session Information")
+        embed.set_footer(text="Greenville Roleplay Network")
 
         await channel.send(embed=embed, view=SessionInfoView())
 
