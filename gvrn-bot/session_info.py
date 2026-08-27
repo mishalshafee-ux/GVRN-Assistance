@@ -43,6 +43,7 @@ class SessionInfo(commands.Cog):
         if SESSION_INFO_IMAGE_URL:
             image_embed = discord.Embed(color=COLOR)
             image_embed.set_image(url=SESSION_INFO_IMAGE_URL)
+            image_embed.set_footer(text="GVRN Session Info Image")
             await channel.send(embed=image_embed)
 
         embed = discord.Embed(

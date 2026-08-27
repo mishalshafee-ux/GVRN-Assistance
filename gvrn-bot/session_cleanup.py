@@ -12,6 +12,7 @@ SESSION_DELETE_FOOTERS = {
 SESSION_KEEP_FOOTERS = {
     "GVRN Session Information",
     "Greenville Roleplay Network",
+    "GVRN Session Info Image",
 }
 
 
