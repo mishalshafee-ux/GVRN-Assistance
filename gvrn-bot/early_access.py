@@ -23,7 +23,7 @@ def is_staff(member: discord.Member) -> bool:
     return any(role.id == STAFF_COMMAND_ROLE_ID for role in member.roles)
 
 SERVER_NAME = "GVRN"
-EA_COLOR = 0x76F55D
+EA_COLOR = 0xE7F6FF
 
 EA_TITLE = "Session Early Access"
 EA_DESCRIPTION = (

@@ -16,10 +16,10 @@ class ServerStats(commands.Cog):
     def cog_unload(self):
         self.update_stats.cancel()
 
-    @tasks.loop(minutes=1)
-    async def update_stats(self):
+    async def update_everything(self):
         guild = self.bot.get_guild(GUILD_ID) if GUILD_ID else None
         if not guild:
+            print("Server stats: guild not found. Check GUILD_ID.")
             return
 
         try:
@@ -47,6 +47,12 @@ class ServerStats(commands.Cog):
         if bot_channel:
             await self.rename_channel(bot_channel, f"Bots: {bots}")
 
+        print(f"Server stats updated: Members={humans}, Bots={bots}")
+
+    @tasks.loop(minutes=1)
+    async def update_stats(self):
+        await self.update_everything()
+
     async def rename_channel(self, channel, name):
         if channel.name == name:
             return
@@ -54,9 +60,9 @@ class ServerStats(commands.Cog):
         try:
             await channel.edit(name=name, reason="Updating server stats.")
         except discord.Forbidden:
-            pass
-        except discord.HTTPException:
-            pass
+            print(f"Missing Manage Channels permission for {channel.name}.")
+        except discord.HTTPException as error:
+            print(f"Could not rename {channel.name}: {error}")
 
     @update_stats.before_loop
     async def before_update_stats(self):
@@ -64,4 +70,6 @@ class ServerStats(commands.Cog):
 
 
 async def setup(bot):
-    await bot.add_cog(ServerStats(bot))
+    cog = ServerStats(bot)
+    await bot.add_cog(cog)
+    bot.loop.create_task(cog.update_everything())
