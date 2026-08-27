@@ -3,7 +3,7 @@ import os
 import discord
 from discord.ext import commands
 
-COLOR = 0xE7F6FF
+COLOR = 0xD3E6FF
 
 SESSION_INFO_CHANNEL_ID = int(os.getenv("SESSION_INFO_CHANNEL_ID", "0") or 0)
 SESSION_INFO_IMAGE_URL = os.getenv("SESSION_INFO_IMAGE_URL", "")

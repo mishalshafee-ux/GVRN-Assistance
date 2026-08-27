@@ -9,7 +9,7 @@ RELEASE_IMAGE_URL = os.getenv("RELEASE_IMAGE_URL", "")
 STAFF_COMMAND_ROLE_ID = int(os.getenv("STAFF_COMMAND_ROLE_ID", "0"))
 
 SERVER_NAME = "GVRN"
-RELEASE_COLOR = 0xE7F6FF
+RELEASE_COLOR = 0xD3E6FF
 RELEASE_TITLE = "Greenville Community Roleplay - Roleplay Session Released"
 
 

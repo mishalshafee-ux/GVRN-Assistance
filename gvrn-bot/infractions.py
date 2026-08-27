@@ -12,7 +12,7 @@ INFRACTION_2_ROLE_ID = int(os.getenv("INFRACTION_2_ROLE_ID", "0"))
 INFRACTION_3_ROLE_ID = int(os.getenv("INFRACTION_3_ROLE_ID", "0"))
 INFRACTION_COMMAND_ROLE_ID = int(os.getenv("INFRACTION_COMMAND_ROLE_ID", "0"))
 
-INFRACTION_COLOR = 0xE7F6FF
+INFRACTION_COLOR = 0xD3E6FF
 INFRACTION_APPEAL_TEXT = os.getenv("INFRACTION_APPEAL_TEXT", "by opening an appeal application")
 INFRACTION_SERVER_NAME = "Greenville Roleplay Network"
 INFRACTION_DATA_FILE = Path("infraction_cases.json")

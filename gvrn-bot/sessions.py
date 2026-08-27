@@ -17,7 +17,7 @@ SESSION_STATE_FILE = Path("session_state.json")
 
 SERVER_NAME = "GVRN"
 SESSION_TITLE = "Greenville Community Roleplay - Roleplay Session Startup"
-SESSION_COLOR = 0xE7F6FF
+SESSION_COLOR = 0xD3E6FF
 
 BEFORE_JOINING_TEXT = (
     "➜ Ensure you are verified **here**.\n"
