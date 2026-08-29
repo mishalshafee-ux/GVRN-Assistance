@@ -1,193 +1,150 @@
-import json
 import os
 from datetime import datetime, timezone
-from pathlib import Path
 
 import discord
 from discord import app_commands
 from discord.ext import commands
+
 from session_cleanup import clear_session_embeds
 from session_state import save_session_start
 
-SESSION_PING_ROLE_ID = int(os.getenv("SESSION_PING_ROLE_ID", "0"))
-SESSION_REACTION_EMOJI = os.getenv("SESSION_REACTION_EMOJI", "🤍")
+COLOR = 0xD3E6FF
+
+SESSION_PING_ROLE_ID = int(os.getenv("SESSION_PING_ROLE_ID", "0") or 0)
+STAFF_COMMAND_ROLE_ID = int(os.getenv("STAFF_COMMAND_ROLE_ID", "0") or 0)
+SESSION_STAFF_CHANNEL_ID = int(os.getenv("SESSION_STAFF_CHANNEL_ID", "0") or 0)
 SESSION_IMAGE_URL = os.getenv("SESSION_IMAGE_URL", "")
-SESSION_STAFF_CHANNEL_ID = int(os.getenv("SESSION_STAFF_CHANNEL_ID", "0"))
-STAFF_COMMAND_ROLE_ID = int(os.getenv("STAFF_COMMAND_ROLE_ID", "0"))
+SESSION_REACTION_EMOJI = os.getenv("SESSION_REACTION_EMOJI", "✅")
 
-SESSION_STATE_FILE = Path("session_state.json")
-
-SERVER_NAME = "GVRN"
-SESSION_TITLE = "Greenville Community Roleplay - Roleplay Session Startup"
-SESSION_COLOR = 0xD3E6FF
-
-BEFORE_JOINING_TEXT = (
-    "➜ Ensure you are verified **here**.\n"
-    "➜ Read **information** & the **banned vehicle list**.\n"
-    "➜ Register your vehicles in **/vehicle-registeration**!"
-)
-
-SETUP_TITLE = "Session Setup"
-SETUP_DESCRIPTION = (
-    "The required votes have been reached. Please wait **5-10 minutes** "
-    "while the host sets up the session."
-)
+SESSION_VOTES = {}
 
 
-def is_staff(member: discord.Member) -> bool:
-    if member.guild_permissions.administrator:
+def can_use_session_command(member: discord.Member):
+    if member.guild_permissions.manage_guild:
         return True
+
     return any(role.id == STAFF_COMMAND_ROLE_ID for role in member.roles)
 
 
+def role_mention(role_id):
+    return f"<@&{role_id}>" if role_id else ""
 
 
-def save_session_start(host_id, message_id, required_reactions):
-    data = {
-        "host_id": host_id,
-        "started_at": datetime.now(timezone.utc).isoformat(),
-        "startup_message_id": message_id,
-        "required_reactions": required_reactions,
-        "setup_sent": False,
-    }
-
-    with SESSION_STATE_FILE.open("w", encoding="utf-8") as file:
-        json.dump(data, file, indent=2)
-
-
-def load_session_state():
-    if not SESSION_STATE_FILE.exists():
-        return None
-
-    with SESSION_STATE_FILE.open("r", encoding="utf-8") as file:
-        return json.load(file)
-
-
-def update_session_state(data):
-    with SESSION_STATE_FILE.open("w", encoding="utf-8") as file:
-        json.dump(data, file, indent=2)
-
-
-def reaction_matches(reaction):
-    configured = discord.PartialEmoji.from_str(SESSION_REACTION_EMOJI)
-
-    if configured.id:
-        return getattr(reaction.emoji, "id", None) == configured.id
-
-    return str(reaction.emoji) == SESSION_REACTION_EMOJI
-
-
-class Sessions(commands.Cog):
+class Session(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
     session = app_commands.Group(name="session", description="Session commands.")
 
     @session.command(name="startup", description="Start a roleplay session vote.")
-    @app_commands.describe(required_reactions="How many reactions are needed before starting")
+    @app_commands.describe(required_reactions="Required reactions before setup notice")
     async def startup(self, interaction: discord.Interaction, required_reactions: int = 10):
-        if interaction.guild is None or not isinstance(interaction.user, discord.Member):
-            await interaction.response.send_message("Use this in a server.", ephemeral=True)
+        await interaction.response.defer(ephemeral=True)
+
+        if not can_use_session_command(interaction.user):
+            await interaction.followup.send("You do not have permission to use this command.", ephemeral=True)
             return
 
-        if not isinstance(interaction.channel, discord.TextChannel):
-            await interaction.response.send_message("Use this in a server text channel.", ephemeral=True)
+        if required_reactions < 1:
+            await interaction.followup.send("Required reactions must be at least 1.", ephemeral=True)
             return
 
-        if not is_staff(interaction.user):
-            await interaction.response.send_message(
-                "You do not have permission to use this command.",
-                ephemeral=True,
-            )
-            return
+        await clear_session_embeds(interaction.channel)
 
-        await interaction.response.defer(ephemeral=True, thinking=False)
-
-        try:
-            await clear_session_embeds(interaction.channel)
-        except discord.Forbidden:
-            await interaction.followup.send(
-                "I need Manage Messages permission to clear old session messages.",
-                ephemeral=True,
-            )
-            return
-
-        ping_role = interaction.guild.get_role(SESSION_PING_ROLE_ID)
-        ping_text = ping_role.mention if ping_role else ""
+        ping = role_mention(SESSION_PING_ROLE_ID)
 
         embed = discord.Embed(
+            title="Greenville Roleplay Network - Roleplay Session Startup",
             description=(
-                f"♡ **{SESSION_TITLE}** ♡\n\n"
-                f"》 {interaction.user.mention} is hosting a roleplay session! "
-                f"If you intend on joining, react below with the host's chosen reaction. "
-                f"If you react without joining, you could face consequences from the staff team!\n\n"
-                f"**Before Joining**\n\n"
-                f"{BEFORE_JOINING_TEXT}\n\n"
+                f"› {interaction.user.mention} is hosting a roleplay session! If you intend on joining, "
+                "react below with the host's chosen reaction. If you react without joining, you could face "
+                "consequences from the staff team!\n\n"
+                "**Before Joining**\n\n"
+                "➜ Ensure you are verified **here**.\n"
+                "➜ Read information before joining.\n"
+                "➜ Register your vehicles in **/vehicle-registeration**.\n\n"
                 f"↪ The host must get **{required_reactions}+** reactions before starting."
             ),
-            color=SESSION_COLOR,
+            color=COLOR,
         )
+        embed.set_footer(text="GVRN Sessions")
 
         if SESSION_IMAGE_URL:
             embed.set_image(url=SESSION_IMAGE_URL)
 
-        embed.set_footer(text=f"{SERVER_NAME} Sessions")
-
-        message = save_session_start(interaction.guild.id)
-            await interaction.channel.send(
-            content=ping_text,
+        message = await interaction.channel.send(
+            content=ping,
             embed=embed,
-            allowed_mentions=discord.AllowedMentions(roles=True, users=True),
+            allowed_mentions=discord.AllowedMentions(roles=True),
         )
-
-        save_session_start(interaction.user.id, message.id, required_reactions)
 
         try:
-            emoji = discord.PartialEmoji.from_str(SESSION_REACTION_EMOJI)
-            await message.add_reaction(emoji)
+            await message.add_reaction(SESSION_REACTION_EMOJI)
         except discord.HTTPException:
-            await message.add_reaction("🤍")
+            pass
 
-        await interaction.delete_original_response()
+        SESSION_VOTES[message.id] = {
+            "required": required_reactions,
+            "host_id": interaction.user.id,
+            "sent_setup": False,
+            "channel_id": interaction.channel.id,
+            "guild_id": interaction.guild.id,
+        }
+
+        save_session_start(interaction.guild.id)
+
+        await interaction.followup.send("Session startup sent.", ephemeral=True)
 
     @commands.Cog.listener()
-    async def on_reaction_add(self, reaction, user):
-        if user.bot:
+    async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
+        data = SESSION_VOTES.get(payload.message_id)
+
+        if not data or data.get("sent_setup"):
             return
 
-        data = load_session_state()
-        if not data or data.get("setup_sent"):
+        if payload.user_id == self.bot.user.id:
             return
 
-        if reaction.message.id != data.get("startup_message_id"):
+        channel = self.bot.get_channel(data["channel_id"])
+        if not isinstance(channel, discord.TextChannel):
             return
 
-        if not reaction_matches(reaction):
+        try:
+            message = await channel.fetch_message(payload.message_id)
+        except discord.HTTPException:
             return
 
-        if reaction.count < int(data.get("required_reactions", 10)):
+        reaction_count = 0
+
+        for reaction in message.reactions:
+            if str(reaction.emoji) == SESSION_REACTION_EMOJI:
+                reaction_count = reaction.count
+                break
+
+        if reaction_count < data["required"]:
             return
 
-        data["setup_sent"] = True
-        update_session_state(data)
+        data["sent_setup"] = True
 
         setup_embed = discord.Embed(
-            title=SETUP_TITLE,
-            description=SETUP_DESCRIPTION,
-            color=SESSION_COLOR,
+            title="Session Setup",
+            description=(
+                "The required votes have been reached. Please wait **5-10 minutes** while the host "
+                "sets up the session."
+            ),
+            color=COLOR,
         )
-        setup_embed.set_footer(text=f"{SERVER_NAME} Sessions")
+        setup_embed.set_footer(text="GVRN Sessions")
 
-        await reaction.message.channel.send(embed=setup_embed)
+        await channel.send(embed=setup_embed)
 
-        staff_channel = reaction.message.guild.get_channel(SESSION_STAFF_CHANNEL_ID)
+        staff_channel = self.bot.get_channel(SESSION_STAFF_CHANNEL_ID)
         if isinstance(staff_channel, discord.TextChannel):
             await staff_channel.send(
-                f"<@{data['host_id']}> your session has reached "
-                f"**{data['required_reactions']}** reactions. Please begin setting up. "
-                f"Members have been told to wait **5-10 minutes**."
+                f"<@{data['host_id']}> your session vote reached **{data['required']}** reactions.",
+                allowed_mentions=discord.AllowedMentions(users=True),
             )
 
 
 async def setup(bot):
-    await bot.add_cog(Sessions(bot))
+    await bot.add_cog(Session(bot))
