@@ -43,6 +43,7 @@ EXTENSIONS = [
     "say",
     "server_stats",
     "suggestions",
+    "moderation_tools",
 ]
 
 

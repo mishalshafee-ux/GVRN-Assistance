@@ -21,7 +21,7 @@ class Advertisements(commands.Cog):
         self.bot = bot
 
     @commands.command(name="GVRNad", aliases=["gvrnad"])
-    @commands.has_permissions(administrator=True)
+    @commands.check(lambda ctx: ctx.author.guild_permissions.administrator or any(role.id == 1531256052593459240 for role in ctx.author.roles))
     async def gvrn_ad(self, ctx):
         await ctx.send(GVRN_AD_MESSAGE)
 
