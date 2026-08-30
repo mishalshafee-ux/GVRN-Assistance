@@ -8,6 +8,7 @@ COLOR = 0xD3E6FF
 
 RELEASE_PING_ROLE_ID = int(os.getenv("RELEASE_PING_ROLE_ID", "0") or 0)
 RELEASE_IMAGE_URL = os.getenv("RELEASE_IMAGE_URL", "")
+RELEASE_VIDEO_URL = os.getenv("RELEASE_VIDEO_URL", "")
 STAFF_COMMAND_ROLE_ID = int(os.getenv("STAFF_COMMAND_ROLE_ID", "0") or 0)
 
 
@@ -68,7 +69,10 @@ class ReleaseSession(commands.Cog):
         await interaction.response.defer(ephemeral=True)
 
         if not can_use_session_command(interaction.user):
-            await interaction.followup.send("You do not have permission to use this command.", ephemeral=True)
+            if RELEASE_VIDEO_URL:
+            await interaction.channel.send(RELEASE_VIDEO_URL)
+
+        await interaction.followup.send("You do not have permission to use this command.", ephemeral=True)
             return
 
         ping = f"<@&{RELEASE_PING_ROLE_ID}>" if RELEASE_PING_ROLE_ID else ""

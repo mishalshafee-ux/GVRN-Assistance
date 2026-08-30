@@ -6,6 +6,7 @@ from discord.ext import commands
 
 REINVITES_PING_ROLE_ID = int(os.getenv("REINVITES_PING_ROLE_ID", "0"))
 REINVITES_IMAGE_URL = os.getenv("REINVITES_IMAGE_URL", "")
+REINVITES_VIDEO_URL = os.getenv("REINVITES_VIDEO_URL", "")
 
 # =========================
 # RE-INVITES EMBED EDIT AREA
