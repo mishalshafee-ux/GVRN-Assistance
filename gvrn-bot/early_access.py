@@ -15,22 +15,38 @@ def can_use(member: discord.Member) -> bool:
     return member.guild_permissions.administrator or any(role.id == STAFF_COMMAND_ROLE_ID for role in member.roles)
 
 
-class ServerCodeView(discord.ui.View):
+class EarlyAccessCodeView(discord.ui.View):
     def __init__(self, code: str):
         super().__init__(timeout=None)
-        self.add_item(discord.ui.Button(label=f"Server Code: {code}", style=discord.ButtonStyle.secondary, disabled=True))
+        self.code = code
+
+    @discord.ui.button(label="Get Server Code", style=discord.ButtonStyle.success)
+    async def get_code(self, interaction: discord.Interaction, button: discord.ui.Button):
+        if EA_REQUIRED_ROLE_ID:
+            role = interaction.guild.get_role(EA_REQUIRED_ROLE_ID)
+            if role not in interaction.user.roles:
+                await interaction.response.send_message(
+                    "You do not have Early Access.",
+                    ephemeral=True,
+                )
+                return
+
+        await interaction.response.send_message(
+            f"Your Early Access server code is: `{self.code}`",
+            ephemeral=True,
+        )
 
 
 class EarlyAccess(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @app_commands.command(name="ea", description="Send the early access session code.")
+    @app_commands.command(name="ea", description="Send the early access session panel.")
     @app_commands.describe(
-        session_code="The Greenville server code, like AAAKF",
+        code="The Greenville server code, like AAAKF",
         message="Extra message to show on the early access embed.",
     )
-    async def ea(self, interaction: discord.Interaction, session_code: str, message: str = "Early access is now open."):
+    async def ea(self, interaction: discord.Interaction, code: str, message: str = "Early access is now open."):
         if not can_use(interaction.user):
             await interaction.response.send_message("You do not have permission to use this command.", ephemeral=True)
             return
@@ -43,21 +59,26 @@ class EarlyAccess(commands.Cog):
             title="Greenville Roleplay Network — Early Access",
             description=(
                 f"{message}\n\n"
-                f"**Server Code:** `{session_code}`"
+                "Press the button below to get the server code.\n"
+                "Only Early Access members can see the code."
             ),
             color=COLOR,
         )
 
         if EA_REQUIRED_ROLE_ID:
-            embed.add_field(name="Access", value=f"Only <@&{EA_REQUIRED_ROLE_ID}> may join during early access.", inline=False)
+            embed.add_field(
+                name="Access",
+                value=f"Only <@&{EA_REQUIRED_ROLE_ID}> may join during early access.",
+                inline=False,
+            )
 
         if EA_IMAGE_URL:
             embed.set_image(url=EA_IMAGE_URL)
 
         embed.set_footer(text="GVRN Sessions")
 
-        await interaction.channel.send(content=ping, embed=embed, view=ServerCodeView(session_code))
-        await interaction.followup.send("Early access sent.", ephemeral=True)
+        await interaction.channel.send(content=ping, embed=embed, view=EarlyAccessCodeView(code))
+        await interaction.followup.send("Early access panel sent.", ephemeral=True)
 
 
 async def setup(bot):
