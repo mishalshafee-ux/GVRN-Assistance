@@ -4,31 +4,42 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-RELEASE_PING_ROLE_ID = int(os.getenv("RELEASE_PING_ROLE_ID", "0"))
+COLOR = 0xD3E6FF
+
+RELEASE_PING_ROLE_ID = int(os.getenv("RELEASE_PING_ROLE_ID", "0") or 0)
 RELEASE_IMAGE_URL = os.getenv("RELEASE_IMAGE_URL", "")
-STAFF_COMMAND_ROLE_ID = int(os.getenv("STAFF_COMMAND_ROLE_ID", "0"))
-
-SERVER_NAME = "GVRN"
-RELEASE_COLOR = 0xD3E6FF
-RELEASE_TITLE = "Greenville Community Roleplay - Roleplay Session Released"
+STAFF_COMMAND_ROLE_ID = int(os.getenv("STAFF_COMMAND_ROLE_ID", "0") or 0)
 
 
-def is_staff(member: discord.Member) -> bool:
-    if member.guild_permissions.administrator:
+def can_use_session_command(member: discord.Member):
+    if member.guild_permissions.manage_guild:
         return True
+
     return any(role.id == STAFF_COMMAND_ROLE_ID for role in member.roles)
+
+
+class ServerCodeView(discord.ui.View):
+    def __init__(self, session_code: str):
+        super().__init__(timeout=None)
+        self.add_item(
+            discord.ui.Button(
+                label=f"Server Code: {session_code}",
+                style=discord.ButtonStyle.secondary,
+                disabled=True,
+            )
+        )
 
 
 class ReleaseSession(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @app_commands.command(name="release", description="Release a roleplay session.")
+    @app_commands.command(name="release", description="Release the current roleplay session.")
     @app_commands.describe(
-        frp_speed="Fail roleplay speed limit.",
-        peacetime="Peacetime status.",
-        leo_status="Law enforcement status.",
-        session_code="Private server/session code. Must start with https://",
+        frp_speed="Fail roleplay speed",
+        peacetime="Peacetime status",
+        leo_status="Law enforcement status",
+        session_code="Private server code, example AAAKF",
     )
     @app_commands.choices(
         frp_speed=[
@@ -54,62 +65,42 @@ class ReleaseSession(commands.Cog):
         leo_status: app_commands.Choice[str],
         session_code: str,
     ):
-        if interaction.guild is None or not isinstance(interaction.user, discord.Member):
-            await interaction.response.send_message("Use this in a server.", ephemeral=True)
+        await interaction.response.defer(ephemeral=True)
+
+        if not can_use_session_command(interaction.user):
+            await interaction.followup.send("You do not have permission to use this command.", ephemeral=True)
             return
 
-        if not isinstance(interaction.channel, discord.TextChannel):
-            await interaction.response.send_message("Use this in a server text channel.", ephemeral=True)
-            return
+        ping = f"<@&{RELEASE_PING_ROLE_ID}>" if RELEASE_PING_ROLE_ID else ""
 
-        if not is_staff(interaction.user):
-            await interaction.response.send_message("You do not have permission to use this command.", ephemeral=True)
-            return
+        embed = discord.Embed(
+            title="Greenville Roleplay Network - Roleplay Session Released",
+            description=(
+                f"— {interaction.user.mention} has now released their session! You are welcome to join "
+                "using the server code found below. Before joining the session, ensure you have read the "
+                "information below regarding the session.\n\n"
+                "**Roleplay Information**\n\n"
+                f"• **Peacetime Status:** `{peacetime.value}`.\n"
+                f"• **Fail Roleplay Speeds:** `{frp_speed.value}`\n"
+                f"• **Law Enforcement:** `{leo_status.value}`\n"
+                "↪ Pullover Speeds are **6+** the posted speed limit.\n\n"
+                "➜ Any member caught excessively fail roleplaying will result in being kicked from the session."
+            ),
+            color=COLOR,
+        )
+        embed.set_footer(text="GVRN Session Released")
 
-        if not session_code.startswith(("https://", "http://")):
-            await interaction.response.send_message("Session code must start with `https://`.", ephemeral=True)
-            return
+        if RELEASE_IMAGE_URL:
+            embed.set_image(url=RELEASE_IMAGE_URL)
 
-        await interaction.response.defer(ephemeral=True, thinking=False)
+        await interaction.channel.send(
+            content=ping,
+            embed=embed,
+            view=ServerCodeView(session_code),
+            allowed_mentions=discord.AllowedMentions(roles=True),
+        )
 
-        try:
-            ping_role = interaction.guild.get_role(RELEASE_PING_ROLE_ID)
-            content = ping_role.mention if ping_role else ""
-
-            embed = discord.Embed(
-                description=(
-                    f"☁ **{RELEASE_TITLE}** ☁\n\n"
-                    f"▬ {interaction.user.mention} has now released their session! "
-                    f"You are welcome to join using the code found below. Before joining the session, "
-                    f"ensure you've read the information below regarding the session.\n\n"
-                    f"**Roleplay Information**\n\n"
-                    f"● **Peacetime Status:** `{peacetime.value}`.\n"
-                    f"● **Fail Roleplay Speeds:** `{frp_speed.value}`\n"
-                    f"● **Law Enforcement:** `{leo_status.value}`\n"
-                    f"↪ Pullover Speeds are **6+** the posted speed limit.\n\n"
-                    f"➜ Any member caught excessively fail roleplaying will result in being kicked from the session."
-                ),
-                color=RELEASE_COLOR,
-            )
-
-            if RELEASE_IMAGE_URL:
-                embed.set_image(url=RELEASE_IMAGE_URL)
-
-            embed.set_footer(text=f"{SERVER_NAME} Session Released")
-
-            view = discord.ui.View(timeout=None)
-            view.add_item(discord.ui.Button(label="Session Code", style=discord.ButtonStyle.link, url=session_link))
-
-            await interaction.channel.send(
-                content=content,
-                embed=embed,
-                view=view,
-                allowed_mentions=discord.AllowedMentions(roles=True, users=True),
-            )
-            await interaction.delete_original_response()
-
-        except Exception as error:
-            await interaction.followup.send(f"Release command error: `{error}`", ephemeral=True)
+        await interaction.followup.send("Session released.", ephemeral=True)
 
 
 async def setup(bot):
