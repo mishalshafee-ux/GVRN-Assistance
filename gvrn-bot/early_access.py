@@ -4,7 +4,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-COLOR = 0xD3E6FF
+COLOR = 0xEAC5FD
 EA_PING_ROLE_ID = int(os.getenv("EA_PING_ROLE_ID", "0") or 0)
 EA_REQUIRED_ROLE_ID = int(os.getenv("EA_REQUIRED_ROLE_ID", "0") or 0)
 EA_IMAGE_URL = os.getenv("EA_IMAGE_URL", "")

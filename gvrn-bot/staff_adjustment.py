@@ -68,7 +68,7 @@ class StaffAdjustment(commands.Cog):
 
         log_channel = interaction.guild.get_channel(STAFF_ADJUSTMENT_LOG_CHANNEL_ID)
         if isinstance(log_channel, discord.TextChannel):
-            log_embed = discord.Embed(title="Staff Adjustment Logged", color=0x76F55D)
+            log_embed = discord.Embed(title="Staff Adjustment Logged", color=0xEAC5FD)
             log_embed.add_field(name="Staff Member", value=staff_member.mention, inline=False)
             log_embed.add_field(name="Old Rank", value=old_rank, inline=True)
             log_embed.add_field(name="New Rank", value=new_rank, inline=True)

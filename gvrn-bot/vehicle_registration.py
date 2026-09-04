@@ -112,7 +112,7 @@ class VehicleRegisterModal(discord.ui.Modal, title="Vehicle Registration"):
         user_data["vehicles"].append(vehicle)
         save_data(data)
 
-        embed = discord.Embed(title="Vehicle Registered", color=0x76F55D)
+        embed = discord.Embed(title="Vehicle Registered", color=0xEAC5FD)
         embed.add_field(name="Colour", value=vehicle["colour"], inline=True)
         embed.add_field(name="Make", value=vehicle["make"], inline=True)
         embed.add_field(name="Year", value=vehicle["year"], inline=True)
@@ -239,7 +239,7 @@ class VehicleRegistration(commands.Cog):
     def build_profile_embed(self, user, user_data):
         license_status = "Valid" if user_data["has_license"] else "No License"
 
-        embed = discord.Embed(title=f"{user.display_name}'s Vehicle Profile", color=0x76F55D)
+        embed = discord.Embed(title=f"{user.display_name}'s Vehicle Profile", color=0xEAC5FD)
         embed.add_field(name="License Status", value=license_status, inline=False)
 
         vehicles = user_data["vehicles"]

@@ -112,7 +112,7 @@ async def add_log(bot, guild, channel, user, command_name, details):
     if guild:
         log_channel = guild.get_channel(MODLOG_CHANNEL_ID)
         if isinstance(log_channel, discord.TextChannel):
-            embed = discord.Embed(title="Command Log", color=0x76F55D)
+            embed = discord.Embed(title="Command Log", color=0xEAC5FD)
             embed.add_field(name="User", value=user.mention, inline=True)
             embed.add_field(name="Command", value=command_name, inline=True)
             embed.add_field(name="Channel", value=channel.mention if hasattr(channel, "mention") else "Unknown", inline=False)
