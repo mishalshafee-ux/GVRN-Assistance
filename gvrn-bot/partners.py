@@ -14,7 +14,7 @@ class Partners(commands.Cog):
     async def partner_0_20(self, ctx):
         await ctx.send(
             f"{DASH_EMOJI} **0-20 Members** {ARROW_EMOJI} "
-            f"You get no ping, we get here ping. - 3 members from your server join ours."
+            f"You get no ping, we get here ping."
         )
 
         try:
@@ -27,7 +27,7 @@ class Partners(commands.Cog):
     async def partner_21_50(self, ctx):
         await ctx.send(
             f"{DASH_EMOJI} **21-50 Members** {ARROW_EMOJI} "
-            f"You get here ping, we get everyone ping. - 2 members join from your server."
+            f"You get here ping, we get everyone ping."
         )
 
         try:
