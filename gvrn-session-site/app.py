@@ -36,20 +36,24 @@ def save_json(path, data):
 
 def ensure_admin():
     users = load_json(USERS_FILE, [])
-    if users:
-        return
 
-    admin_username = os.getenv("ADMIN_USERNAME", "admin")
-    admin_password = os.getenv("ADMIN_PASSWORD", "changeme")
+    admin_username = os.getenv("ADMIN_USERNAME", "owners")
+    admin_password = os.getenv("ADMIN_PASSWORD", "GVRN123")
 
-    users.append({
-        "id": str(uuid.uuid4()),
-        "username": admin_username,
-        "discord_user_id": "admin",
-        "password_hash": generate_password_hash(admin_password),
-        "role": "admin",
-        "created_at": datetime.now(timezone.utc).isoformat(),
-    })
+    admin = next((user for user in users if user.get("role") == "admin" and user.get("discord_user_id") == "owner-admin"), None)
+
+    if admin:
+        admin["username"] = admin_username
+        admin["password_hash"] = generate_password_hash(admin_password)
+    else:
+        users.append({
+            "id": str(uuid.uuid4()),
+            "username": admin_username,
+            "discord_user_id": "owner-admin",
+            "password_hash": generate_password_hash(admin_password),
+            "role": "admin",
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        })
 
     save_json(USERS_FILE, users)
 
