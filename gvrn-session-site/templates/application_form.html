@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+    <div class="portal-label">GVRN Applications</div>
+    <h2>{{ title }}</h2>
+    <p>Please answer every question truthfully and completely.</p>
+
+    <form method="post">
+        {% for question in questions %}
+            <label>{{ question }}</label>
+            <textarea name="question_{{ loop.index0 }}" rows="4" placeholder="{{ question }}" required></textarea>
+        {% endfor %}
+
+        <button type="submit">Submit {{ title }}</button>
+    </form>
+</div>
+{% endblock %}

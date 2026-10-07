@@ -370,6 +370,172 @@ def review_license_quiz(application_id):
     return redirect(url_for("admin_license_quiz"))
 
 
+STAFF_APPLICATION_FILE = DATA_DIR / "staff_applications.json"
+APPEAL_APPLICATION_FILE = DATA_DIR / "appeal_applications.json"
+
+STAFF_APPLICATION_QUESTIONS = [
+    "What is your Roblox username?",
+    "What is your Discord User ID?",
+    "Are you 13 years old or older?",
+    "Why do you want to become a staff member?",
+    "What makes you suitable for the staff team?",
+    "What does being a good staff member mean to you?",
+    "How would you handle a member who is breaking the rules?",
+    "What would you do if a friend of yours broke a server rule?",
+    "How would you deal with an angry or disrespectful member?",
+    "What would you do if you were unsure how to handle a situation?",
+    "Why is it important for staff to remain professional?",
+    "What would you do if another staff member was abusing their permissions?",
+    "How active can you be within the server?",
+    "How would you handle confidential staff information?",
+    "Why should we choose you over other applicants?",
+]
+
+APPEAL_APPLICATION_QUESTIONS = [
+    "What is your Roblox username?",
+    "What is your Discord User ID?",
+    "What is the Discord username of the person appealing?",
+    "What type of infraction are you appealing?",
+    "Who issued the infraction?",
+    "What was the reason given for the infraction?",
+    "When was the infraction issued?",
+    "Why do you believe the infraction should be removed or reduced?",
+    "What happened from your perspective?",
+    "Do you accept responsibility for any part of the incident?",
+    "Do you have any evidence supporting your appeal?",
+    "Were there any circumstances that may have contributed to the incident?",
+    "Have you received any previous infractions?",
+    "What will you do to prevent a similar situation from happening again?",
+    "Is there anything else you would like the reviewing staff team to consider?",
+]
+
+
+def save_application(path, questions, form):
+    applications = load_json(path, [])
+    answers = {}
+
+    for index, question in enumerate(questions):
+        answers[question] = form.get(f"question_{index}", "").strip()
+
+    applications.append({
+        "id": str(uuid.uuid4()),
+        "answers": answers,
+        "status": "Pending",
+        "submitted_at": datetime.now(timezone.utc).isoformat(),
+    })
+
+    save_json(path, applications)
+
+
+def send_application_webhook(webhook_env, application, decision, reason, reviewer, application_name):
+    webhook_url = os.getenv(webhook_env, "")
+    if not webhook_url:
+        return
+
+    answers = application.get("answers", {})
+    roblox = answers.get("What is your Roblox username?", "Unknown")
+    discord_id = answers.get("What is your Discord User ID?", "Unknown")
+
+    content = (
+        f"**{application_name} {decision}**\n"
+        f"**Roblox Username:** {roblox}\n"
+        f"**Discord User ID:** {discord_id}\n"
+        f"**Reviewed By:** {reviewer}\n"
+        f"**Reason:** {reason}"
+    )
+
+    try:
+        requests.post(webhook_url, json={"content": content}, timeout=10)
+    except Exception as error:
+        print(f"Failed to send {application_name} webhook: {error}")
+
+
+@app.route("/staff-application", methods=["GET", "POST"])
+def staff_application():
+    if request.method == "POST":
+        save_application(STAFF_APPLICATION_FILE, STAFF_APPLICATION_QUESTIONS, request.form)
+        return render_template("application_submitted.html", title="Staff Application Submitted")
+
+    return render_template("application_form.html", title="Staff Application", questions=STAFF_APPLICATION_QUESTIONS)
+
+
+@app.route("/appeal", methods=["GET", "POST"])
+def appeal_application():
+    if request.method == "POST":
+        save_application(APPEAL_APPLICATION_FILE, APPEAL_APPLICATION_QUESTIONS, request.form)
+        return render_template("application_submitted.html", title="Appeal Submitted")
+
+    return render_template("application_form.html", title="Appeal Application", questions=APPEAL_APPLICATION_QUESTIONS)
+
+
+@app.route("/admin/staff-applications")
+@login_required
+@admin_required
+def admin_staff_applications():
+    applications = load_json(STAFF_APPLICATION_FILE, [])
+    return render_template("admin_applications.html", title="Staff Applications", review_base="/admin/staff-applications", applications=list(reversed(applications)))
+
+
+@app.route("/admin/appeals")
+@login_required
+@admin_required
+def admin_appeals():
+    applications = load_json(APPEAL_APPLICATION_FILE, [])
+    return render_template("admin_applications.html", title="Appeal Applications", review_base="/admin/appeals", applications=list(reversed(applications)))
+
+
+@app.route("/admin/staff-applications/<application_id>/review", methods=["POST"])
+@login_required
+@admin_required
+def review_staff_application(application_id):
+    applications = load_json(STAFF_APPLICATION_FILE, [])
+    application = next((item for item in applications if item.get("id") == application_id), None)
+
+    if not application:
+        flash("Application not found.")
+        return redirect(url_for("admin_staff_applications"))
+
+    decision = request.form.get("decision", "").strip()
+    reason = request.form.get("reason", "").strip()
+
+    application["status"] = decision
+    application["review_reason"] = reason
+    application["reviewed_by"] = current_user()["username"]
+    application["reviewed_at"] = datetime.now(timezone.utc).isoformat()
+
+    save_json(STAFF_APPLICATION_FILE, applications)
+    send_application_webhook("STAFF_RESULT_WEBHOOK_URL", application, decision, reason, current_user()["username"], "Staff Application")
+
+    flash(f"Staff application {decision.lower()}.")
+    return redirect(url_for("admin_staff_applications"))
+
+
+@app.route("/admin/appeals/<application_id>/review", methods=["POST"])
+@login_required
+@admin_required
+def review_appeal_application(application_id):
+    applications = load_json(APPEAL_APPLICATION_FILE, [])
+    application = next((item for item in applications if item.get("id") == application_id), None)
+
+    if not application:
+        flash("Application not found.")
+        return redirect(url_for("admin_appeals"))
+
+    decision = request.form.get("decision", "").strip()
+    reason = request.form.get("reason", "").strip()
+
+    application["status"] = decision
+    application["review_reason"] = reason
+    application["reviewed_by"] = current_user()["username"]
+    application["reviewed_at"] = datetime.now(timezone.utc).isoformat()
+
+    save_json(APPEAL_APPLICATION_FILE, applications)
+    send_application_webhook("APPEAL_RESULT_WEBHOOK_URL", application, decision, reason, current_user()["username"], "Appeal Application")
+
+    flash(f"Appeal {decision.lower()}.")
+    return redirect(url_for("admin_appeals"))
+
+
 if __name__ == "__main__":
     print("STAFF PORTAL ROUTES:", sorted(str(rule) for rule in app.url_map.iter_rules()))
     app.run(host="0.0.0.0", port=int(os.getenv("PORT", "3000")))
