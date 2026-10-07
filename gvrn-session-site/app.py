@@ -6,7 +6,7 @@ from functools import wraps
 from pathlib import Path
 
 from dotenv import load_dotenv
-from flask import Flask, flash, redirect, render_template, request, session, url_for
+from flask import Flask, flash, jsonify, redirect, render_template, request, session, url_for
 from werkzeug.security import check_password_hash, generate_password_hash
 
 load_dotenv()
@@ -238,6 +238,31 @@ def ticket_transcripts():
         return redirect(url_for("ticket_transcripts"))
 
     return render_template("ticket_transcripts.html", user=current_user(), transcripts=list(reversed(transcripts)))
+
+@app.route("/api/ticket-transcripts", methods=["POST"])
+def api_ticket_transcripts():
+    api_key = os.getenv("TICKET_TRANSCRIPT_API_KEY", "")
+    sent_key = request.headers.get("X-API-Key", "")
+
+    if api_key and sent_key != api_key:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    data = request.get_json(silent=True) or {}
+    transcripts = load_json(TRANSCRIPTS_FILE, [])
+
+    transcripts.append({
+        "id": str(uuid.uuid4()),
+        "ticket_name": data.get("ticket_name", ""),
+        "opened_by": data.get("opened_by", ""),
+        "closed_by": data.get("closed_by", ""),
+        "claimed_by": data.get("claimed_by", ""),
+        "transcript": data.get("transcript", ""),
+        "saved_by": "Discord Bot",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    })
+
+    save_json(TRANSCRIPTS_FILE, transcripts)
+    return jsonify({"saved": True})
 
 
 if __name__ == "__main__":
