@@ -4,7 +4,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-COLOR = 0xEAC5FD
+COLOR = 0xF5935F
 
 RELEASE_PING_ROLE_ID = int(os.getenv("RELEASE_PING_ROLE_ID", "0") or 0)
 RELEASE_IMAGE_URL = os.getenv("RELEASE_IMAGE_URL", "")

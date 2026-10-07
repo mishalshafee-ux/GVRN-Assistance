@@ -8,7 +8,7 @@ from discord.ext import commands
 from session_cleanup import clear_session_embeds
 from session_state import get_session_start, clear_session_start
 
-COLOR = 0xEAC5FD
+COLOR = 0xF5935F
 
 OVER_IMAGE_URL = os.getenv("OVER_IMAGE_URL", "")
 SESSION_PING_ROLE_ID = int(os.getenv("SESSION_PING_ROLE_ID", "0") or 0)

@@ -23,7 +23,7 @@ def is_staff(member: discord.Member) -> bool:
     return any(role.id == STAFF_COMMAND_ROLE_ID for role in member.roles)
 
 SERVER_NAME = "GVRN"
-REINVITES_COLOR = 0xEAC5FD
+REINVITES_COLOR = 0xF5935F
 REINVITES_TITLE = "Greenville Community Roleplay - Roleplay Session Reinvites"
 
 # =========================

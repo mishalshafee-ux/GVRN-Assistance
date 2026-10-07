@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 import discord
 from discord.ext import commands
 
-COLOR = 0xEAC5FD
+COLOR = 0xF5935F
 
 MAX_OPEN_TICKETS_PER_USER = int(os.getenv("MAX_OPEN_TICKETS_PER_USER", "1"))
 TICKET_TRANSCRIPT_LOG_CHANNEL_ID = int(os.getenv("TICKET_TRANSCRIPT_LOG_CHANNEL_ID", "0"))

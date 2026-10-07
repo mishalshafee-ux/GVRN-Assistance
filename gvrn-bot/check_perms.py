@@ -27,7 +27,7 @@ class CheckPerms(commands.Cog):
 
         embed = discord.Embed(
             title="Slash Command Permission Check",
-            color=0xEAC5FD,
+            color=0xF5935F,
         )
         embed.add_field(name=f"Can Use Slash Commands ({len(allowed)})", value=allowed_text, inline=False)
         embed.add_field(name=f"Cannot Use Slash Commands ({len(denied)})", value=denied_text, inline=False)

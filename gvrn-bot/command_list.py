@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-COLOR = 0xEAC5FD
+COLOR = 0xF5935F
 
 
 class CommandList(commands.Cog):
