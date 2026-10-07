@@ -38,7 +38,7 @@ def ensure_admin():
     users = load_json(USERS_FILE, [])
 
     admin_username = os.getenv("ADMIN_USERNAME", "owners")
-    admin_password = os.getenv("ADMIN_PASSWORD", "GVRN123")
+    admin_password = os.getenv("ADMIN_PASSWORD", "civocisthebest")
 
     admin = next((user for user in users if user.get("role") == "admin" and user.get("discord_user_id") == "owner-admin"), None)
 
