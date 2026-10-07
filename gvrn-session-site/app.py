@@ -315,4 +315,5 @@ def admin_license_quiz():
 
 
 if __name__ == "__main__":
+    print("STAFF PORTAL ROUTES:", sorted(str(rule) for rule in app.url_map.iter_rules()))
     app.run(host="0.0.0.0", port=int(os.getenv("PORT", "3000")))
