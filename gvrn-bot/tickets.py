@@ -2,6 +2,7 @@ import io
 import os
 from datetime import datetime, timezone
 
+import aiohttp
 import discord
 from discord.ext import commands
 
@@ -117,6 +118,63 @@ async def make_transcript(channel):
 
 def transcript_file(filename, transcript_data):
     return discord.File(fp=io.BytesIO(transcript_data), filename=filename)
+
+
+STAFF_PORTAL_TRANSCRIPT_URL = os.getenv("STAFF_PORTAL_TRANSCRIPT_URL", "")
+STAFF_PORTAL_API_KEY = os.getenv("STAFF_PORTAL_API_KEY", "")
+
+
+def parse_ticket_topic(topic):
+    data = {}
+    if not topic:
+        return data
+
+    for part in topic.split("|"):
+        if ":" in part:
+            key, value = part.split(":", 1)
+            data[key.strip()] = value.strip()
+
+    return data
+
+
+async def save_transcript_to_staff_portal(channel, closed_by, transcript_data):
+    if not STAFF_PORTAL_TRANSCRIPT_URL:
+        print("Ticket transcript not saved: STAFF_PORTAL_TRANSCRIPT_URL is not set.")
+        return
+
+    topic_data = parse_ticket_topic(channel.topic)
+    opened_by_id = topic_data.get("ticket-owner", "Unknown")
+    claimed_by_id = topic_data.get("claimed-by", "0")
+
+    opened_by = f"<@{opened_by_id}> ({opened_by_id})" if opened_by_id != "Unknown" else "Unknown"
+
+    claimed_by = "Unclaimed"
+    if claimed_by_id and claimed_by_id != "0":
+        claimed_by = f"<@{claimed_by_id}> ({claimed_by_id})"
+
+    payload = {
+        "ticket_name": channel.name,
+        "opened_by": opened_by,
+        "closed_by": f"{closed_by} ({closed_by.id})",
+        "claimed_by": claimed_by,
+        "transcript": transcript_data.decode("utf-8", errors="replace"),
+    }
+
+    headers = {}
+    if STAFF_PORTAL_API_KEY:
+        headers["X-API-Key"] = STAFF_PORTAL_API_KEY
+
+    try:
+        timeout = aiohttp.ClientTimeout(total=10)
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            async with session.post(STAFF_PORTAL_TRANSCRIPT_URL, json=payload, headers=headers) as response:
+                if response.status >= 300:
+                    body = await response.text()
+                    print(f"Failed to save ticket transcript to staff portal: HTTP {response.status} {body}")
+                else:
+                    print(f"Saved ticket transcript to staff portal: {channel.name}")
+    except Exception as error:
+        print(f"Failed to save ticket transcript to staff portal: {error}")
 
 
 def ticket_embed(user, config):
@@ -311,6 +369,7 @@ class CloseTicketButton(discord.ui.Button):
         ticket_name = interaction.channel.name
 
         filename, transcript_data = await make_transcript(interaction.channel)
+        await save_transcript_to_staff_portal(interaction.channel, interaction.user, transcript_data)
 
         if opener:
             try:
