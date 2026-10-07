@@ -17,6 +17,7 @@ app.secret_key = os.getenv("SECRET_KEY", "change-this-secret-key")
 DATA_DIR = Path("data")
 USERS_FILE = DATA_DIR / "users.json"
 LOGS_FILE = DATA_DIR / "session_logs.json"
+LICENSE_QUIZ_FILE = DATA_DIR / "license_quiz_applications.json"
 PERSONAL_LOGS_FILE = DATA_DIR / "personal_logs.json"
 TRANSCRIPTS_FILE = DATA_DIR / "ticket_transcripts.json"
 
@@ -263,6 +264,54 @@ def api_ticket_transcripts():
 
     save_json(TRANSCRIPTS_FILE, transcripts)
     return jsonify({"saved": True})
+
+LICENSE_QUIZ_QUESTIONS = [
+    "What is your Roblox username?",
+    "What is your Discord User ID?",
+    "Are you 13 years old or older?",
+    "What does a red traffic light mean?",
+    "What does a yellow traffic light mean?",
+    "What should you do when approaching a stop sign?",
+    "What is the purpose of a speed limit?",
+    "When should you use your turn signal?",
+    "What should you do when an emergency vehicle approaches with lights and sirens?",
+    "What does reckless driving mean?",
+    "What should you do before changing lanes?",
+    "What is tailgating?",
+    "When is it appropriate to use your vehicle's horn?",
+    "What should you do if you are involved in a traffic accident?",
+    "Why is following traffic laws important during roleplay?",
+]
+
+
+@app.route("/license-quiz", methods=["GET", "POST"])
+def license_quiz():
+    if request.method == "POST":
+        applications = load_json(LICENSE_QUIZ_FILE, [])
+
+        answers = {}
+        for index, question in enumerate(LICENSE_QUIZ_QUESTIONS):
+            answers[question] = request.form.get(f"question_{index}", "").strip()
+
+        applications.append({
+            "id": str(uuid.uuid4()),
+            "answers": answers,
+            "status": "Pending",
+            "submitted_at": datetime.now(timezone.utc).isoformat(),
+        })
+
+        save_json(LICENSE_QUIZ_FILE, applications)
+        return render_template("license_quiz_submitted.html")
+
+    return render_template("license_quiz.html", questions=LICENSE_QUIZ_QUESTIONS)
+
+
+@app.route("/admin/license-quiz")
+@login_required
+@admin_required
+def admin_license_quiz():
+    applications = load_json(LICENSE_QUIZ_FILE, [])
+    return render_template("admin_license_quiz.html", user=current_user(), applications=list(reversed(applications)))
 
 
 if __name__ == "__main__":

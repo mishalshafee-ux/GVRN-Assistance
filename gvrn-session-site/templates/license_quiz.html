@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+    <div class="portal-label">Civilian Application</div>
+    <h2>GVRN License Quiz</h2>
+    <p>Answer every question carefully. Staff will review your answers after submission.</p>
+
+    <form method="post">
+        {% for question in questions %}
+            <label>{{ question }}</label>
+            <textarea name="question_{{ loop.index0 }}" rows="4" placeholder="{{ question }}" required></textarea>
+        {% endfor %}
+
+        <button type="submit">Submit License Quiz</button>
+    </form>
+</div>
+{% endblock %}

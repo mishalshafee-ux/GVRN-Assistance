@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="toplinks">
+    <a class="btn btn-secondary" href="/dashboard">Back</a>
+</div>
+
+<h2>License Quiz Applications</h2>
+
+{% for application in applications %}
+<div class="card">
+    <h3>Application {{ application.id }}</h3>
+    <p><b>Status:</b> {{ application.status }}</p>
+    <small>Submitted: {{ application.submitted_at }}</small>
+
+    {% for question, answer in application.answers.items() %}
+        <p><b>{{ question }}</b><br>{{ answer }}</p>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card">No license quiz applications yet.</div>
+{% endfor %}
+{% endblock %}
