@@ -1,0 +1,85 @@
+<!doctype html>
+<html>
+<head>
+    <title>GVRN Staff Portal</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #111;
+            color: #fff;
+        }
+        header {
+            background: #f5935f;
+            color: #111;
+            padding: 18px 28px;
+            font-weight: bold;
+            font-size: 22px;
+        }
+        main {
+            max-width: 1000px;
+            margin: 30px auto;
+            padding: 0 18px;
+        }
+        .card {
+            background: #1c1c1c;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 18px;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0 16px;
+            border: 1px solid #444;
+            border-radius: 8px;
+            background: #0d0d0d;
+            color: white;
+        }
+        button, .btn {
+            background: #f5935f;
+            color: #111;
+            border: 0;
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+            cursor: pointer;
+        }
+        .btn-secondary {
+            background: #333;
+            color: white;
+        }
+        .toplinks {
+            margin-bottom: 18px;
+        }
+        .toplinks a {
+            margin-right: 10px;
+        }
+        .flash {
+            background: #302016;
+            border: 1px solid #f5935f;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 14px;
+        }
+        small {
+            color: #bbb;
+        }
+    </style>
+</head>
+<body>
+<header>GVRN Staff Portal</header>
+<main>
+    {% with messages = get_flashed_messages() %}
+        {% for message in messages %}
+            <div class="flash">{{ message }}</div>
+        {% endfor %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+</main>
+</body>
+</html>

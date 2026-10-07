@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="toplinks">
+    <a class="btn" href="/log-session">Log Session</a>
+    {% if user.role == "admin" %}
+        <a class="btn" href="/admin/users">Manage Staff Accounts</a>
+        <a class="btn" href="/admin/personal-logs">Personal Logs</a>
+        <a class="btn" href="/admin/ticket-transcripts">Ticket Transcripts</a>
+    {% endif %}
+    <a class="btn btn-secondary" href="/logout">Logout</a>
+</div>
+
+<div class="card">
+    <h2>Welcome, {{ user.username }}</h2>
+    <p>Role: <b>{{ user.role }}</b></p>
+</div>
+
+<h2>Session Logs</h2>
+
+{% for log in logs %}
+<div class="card">
+    <h3>Session hosted by {{ log.hosted_by }}</h3>
+    <p><b>Duration:</b> {{ log.duration }}</p>
+    <p><b>Co-hosts:</b> {{ log.co_hosts or "None" }}</p>
+    <p><b>Notes:</b><br>{{ log.notes or "No notes" }}</p>
+    <small>
+        Submitted by {{ log.created_by_username }}
+        | Discord ID: {{ log.created_by_discord_user_id }}
+        | {{ log.created_at }}
+    </small>
+</div>
+{% else %}
+<div class="card">No session logs yet.</div>
+{% endfor %}
+{% endblock %}

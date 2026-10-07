@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="toplinks">
+    <a class="btn btn-secondary" href="/dashboard">Back</a>
+</div>
+
+<div class="card">
+    <h2>Log Session</h2>
+    <form method="post">
+        <label>User/person who hosted</label>
+        <input name="hosted_by" placeholder="Example: Miguel" required>
+
+        <label>Duration</label>
+        <input name="duration" placeholder="Example: 1 hour 30 minutes" required>
+
+        <label>Co-hosts</label>
+        <input name="co_hosts" placeholder="Example: @user1, @user2">
+
+        <label>Notes</label>
+        <textarea name="notes" rows="6" placeholder="Session notes..."></textarea>
+
+        <button type="submit">Save Session Log</button>
+    </form>
+</div>
+{% endblock %}
