@@ -44,6 +44,7 @@ EXTENSIONS = [
     "server_stats",
     "suggestions",
     "moderation_tools",
+    "cohost",
     "check_perms",
 ]
 
