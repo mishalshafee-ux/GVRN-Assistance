@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="toplinks">
+    <a class="btn btn-secondary" href="/dashboard">Back</a>
+</div>
+
+<div class="card">
+    <h2>Save Ticket Transcript</h2>
+    <form method="post">
+        <label>Ticket Name</label>
+        <input name="ticket_name" placeholder="general-support-001" required>
+
+        <label>Opened By</label>
+        <input name="opened_by" placeholder="Discord user / ID">
+
+        <label>Closed By</label>
+        <input name="closed_by" placeholder="Staff name / ID">
+
+        <label>Transcript</label>
+        <textarea name="transcript" rows="12" required></textarea>
+
+        <button type="submit">Save Transcript</button>
+    </form>
+</div>
+
+<h2>Saved Ticket Transcripts</h2>
+
+{% for item in transcripts %}
+<div class="card">
+    <h3>{{ item.ticket_name }}</h3>
+    <p><b>Opened By:</b> {{ item.opened_by or "Unknown" }}</p>
+    <p><b>Closed By:</b> {{ item.closed_by or "Unknown" }}</p>
+    <pre style="white-space: pre-wrap;">{{ item.transcript }}</pre>
+    <small>Saved by {{ item.saved_by }} | {{ item.created_at }}</small>
+</div>
+{% else %}
+<div class="card">No ticket transcripts saved yet.</div>
+{% endfor %}
+{% endblock %}
