@@ -12,11 +12,58 @@
     <p><b>Status:</b> {{ application.status }}</p>
     <small>Submitted: {{ application.submitted_at }}</small>
 
+    {% if application.review_reason %}
+        <p><b>Review Reason:</b> {{ application.review_reason }}</p>
+        <p><b>Reviewed By:</b> {{ application.reviewed_by }}</p>
+    {% endif %}
+
     {% for question, answer in application.answers.items() %}
         <p><b>{{ question }}</b><br>{{ answer }}</p>
     {% endfor %}
+
+    <div class="review-actions">
+        <button type="button" onclick="openReview('{{ application.id }}', 'Accepted')">Accept</button>
+        <button type="button" class="deny-btn" onclick="openReview('{{ application.id }}', 'Denied')">Deny</button>
+    </div>
+
+    <form id="review-{{ application.id }}" method="post" action="/admin/license-quiz/{{ application.id }}/review" class="review-form" style="display: none;">
+        <input type="hidden" name="decision" id="decision-{{ application.id }}">
+        <label id="reason-label-{{ application.id }}">Reason</label>
+        <textarea name="reason" rows="4" required></textarea>
+        <button type="submit">Submit Review</button>
+    </form>
 </div>
 {% else %}
 <div class="card">No license quiz applications yet.</div>
 {% endfor %}
+
+<script>
+function openReview(id, decision) {
+    const form = document.getElementById(`review-${id}`);
+    const decisionInput = document.getElementById(`decision-${id}`);
+    const label = document.getElementById(`reason-label-${id}`);
+
+    decisionInput.value = decision;
+    label.innerText = decision === "Accepted" ? "Acceptance Reason" : "Denial Reason";
+    form.style.display = "block";
+    form.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+</script>
+
+<style>
+.review-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+}
+.deny-btn {
+    background: linear-gradient(135deg, #fca5a5, #ef4444);
+    color: #111;
+}
+.review-form {
+    margin-top: 18px;
+    border-top: 1px solid var(--border);
+    padding-top: 18px;
+}
+</style>
 {% endblock %}

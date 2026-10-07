@@ -1,6 +1,7 @@
 import json
 import os
 import uuid
+import requests
 from datetime import datetime, timezone
 from functools import wraps
 from pathlib import Path
@@ -283,6 +284,28 @@ LICENSE_QUIZ_QUESTIONS = [
     "Why is following traffic laws important during roleplay?",
 ]
 
+def send_license_result_webhook(application, decision, reason, reviewer):
+    webhook_url = os.getenv("LICENSE_RESULT_WEBHOOK_URL", "")
+    if not webhook_url:
+        return
+
+    answers = application.get("answers", {})
+    roblox = answers.get("What is your Roblox username?", "Unknown")
+    discord_id = answers.get("What is your Discord User ID?", "Unknown")
+
+    content = (
+        f"**License Quiz {decision}**\n"
+        f"**Roblox Username:** {roblox}\n"
+        f"**Discord User ID:** {discord_id}\n"
+        f"**Reviewed By:** {reviewer}\n"
+        f"**Reason:** {reason}"
+    )
+
+    try:
+        requests.post(webhook_url, json={"content": content}, timeout=10)
+    except Exception as error:
+        print(f"Failed to send license result webhook: {error}")
+
 
 @app.route("/license-quiz", methods=["GET", "POST"])
 def license_quiz():
@@ -316,6 +339,35 @@ def admin_license_quiz():
 @app.route("/apply")
 def apply_dashboard():
     return render_template("apply_dashboard.html")
+
+@app.route("/admin/license-quiz/<application_id>/review", methods=["POST"])
+@login_required
+@admin_required
+def review_license_quiz(application_id):
+    applications = load_json(LICENSE_QUIZ_FILE, [])
+    decision = request.form.get("decision", "").strip()
+    reason = request.form.get("reason", "").strip()
+
+    application = next((item for item in applications if item.get("id") == application_id), None)
+
+    if not application:
+        flash("Application not found.")
+        return redirect(url_for("admin_license_quiz"))
+
+    if decision not in ["Accepted", "Denied"]:
+        flash("Invalid decision.")
+        return redirect(url_for("admin_license_quiz"))
+
+    application["status"] = decision
+    application["review_reason"] = reason
+    application["reviewed_by"] = current_user()["username"]
+    application["reviewed_at"] = datetime.now(timezone.utc).isoformat()
+
+    save_json(LICENSE_QUIZ_FILE, applications)
+    send_license_result_webhook(application, decision, reason, current_user()["username"])
+
+    flash(f"Application {decision.lower()}.")
+    return redirect(url_for("admin_license_quiz"))
 
 
 if __name__ == "__main__":
