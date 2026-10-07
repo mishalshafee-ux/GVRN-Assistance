@@ -285,9 +285,9 @@ LICENSE_QUIZ_QUESTIONS = [
 ]
 
 def send_license_result_webhook(application, decision, reason, reviewer):
-    webhook_url = os.getenv("LICENSE_RESULT_WEBHOOK_URL", "")
+    webhook_url = os.getenv("LICENSE_RESULT_WEBHOOK_URL", "") or os.getenv("APPLICATION_RESULT_WEBHOOK_URL", "")
     if not webhook_url:
-        return
+        return False, "No webhook URL set."
 
     answers = application.get("answers", {})
     roblox = answers.get("What is your Roblox username?", "Unknown")
@@ -302,9 +302,12 @@ def send_license_result_webhook(application, decision, reason, reviewer):
     )
 
     try:
-        requests.post(webhook_url, json={"content": content}, timeout=10)
+        response = requests.post(webhook_url, json={"content": content}, timeout=10)
+        if response.status_code >= 300:
+            return False, f"Discord returned HTTP {response.status_code}: {response.text[:200]}"
+        return True, "Sent."
     except Exception as error:
-        print(f"Failed to send license result webhook: {error}")
+        return False, str(error)
 
 
 @app.route("/license-quiz", methods=["GET", "POST"])
@@ -364,9 +367,12 @@ def review_license_quiz(application_id):
     application["reviewed_at"] = datetime.now(timezone.utc).isoformat()
 
     save_json(LICENSE_QUIZ_FILE, applications)
-    send_license_result_webhook(application, decision, reason, current_user()["username"])
+    sent, webhook_message = send_license_result_webhook(application, decision, reason, current_user()["username"])
 
-    flash(f"Application {decision.lower()}.")
+    if sent:
+        flash(f"Application {decision.lower()} and result sent to Discord.")
+    else:
+        flash(f"Application {decision.lower()}, but Discord message was not sent: {webhook_message}")
     return redirect(url_for("admin_license_quiz"))
 
 
@@ -428,9 +434,9 @@ def save_application(path, questions, form):
 
 
 def send_application_webhook(webhook_env, application, decision, reason, reviewer, application_name):
-    webhook_url = os.getenv(webhook_env, "")
+    webhook_url = os.getenv(webhook_env, "") or os.getenv("APPLICATION_RESULT_WEBHOOK_URL", "")
     if not webhook_url:
-        return
+        return False, "No webhook URL set."
 
     answers = application.get("answers", {})
     roblox = answers.get("What is your Roblox username?", "Unknown")
@@ -445,9 +451,12 @@ def send_application_webhook(webhook_env, application, decision, reason, reviewe
     )
 
     try:
-        requests.post(webhook_url, json={"content": content}, timeout=10)
+        response = requests.post(webhook_url, json={"content": content}, timeout=10)
+        if response.status_code >= 300:
+            return False, f"Discord returned HTTP {response.status_code}: {response.text[:200]}"
+        return True, "Sent."
     except Exception as error:
-        print(f"Failed to send {application_name} webhook: {error}")
+        return False, str(error)
 
 
 @app.route("/staff-application", methods=["GET", "POST"])
@@ -504,9 +513,12 @@ def review_staff_application(application_id):
     application["reviewed_at"] = datetime.now(timezone.utc).isoformat()
 
     save_json(STAFF_APPLICATION_FILE, applications)
-    send_application_webhook("STAFF_RESULT_WEBHOOK_URL", application, decision, reason, current_user()["username"], "Staff Application")
+    sent, webhook_message = send_application_webhook("STAFF_RESULT_WEBHOOK_URL", application, decision, reason, current_user()["username"], "Staff Application")
 
-    flash(f"Staff application {decision.lower()}.")
+    if sent:
+        flash(f"Staff application {decision.lower()} and result sent to Discord.")
+    else:
+        flash(f"Staff application {decision.lower()}, but Discord message was not sent: {webhook_message}")
     return redirect(url_for("admin_staff_applications"))
 
 
@@ -530,9 +542,12 @@ def review_appeal_application(application_id):
     application["reviewed_at"] = datetime.now(timezone.utc).isoformat()
 
     save_json(APPEAL_APPLICATION_FILE, applications)
-    send_application_webhook("APPEAL_RESULT_WEBHOOK_URL", application, decision, reason, current_user()["username"], "Appeal Application")
+    sent, webhook_message = send_application_webhook("APPEAL_RESULT_WEBHOOK_URL", application, decision, reason, current_user()["username"], "Appeal Application")
 
-    flash(f"Appeal {decision.lower()}.")
+    if sent:
+        flash(f"Appeal {decision.lower()} and result sent to Discord.")
+    else:
+        flash(f"Appeal {decision.lower()}, but Discord message was not sent: {webhook_message}")
     return redirect(url_for("admin_appeals"))
 
 
