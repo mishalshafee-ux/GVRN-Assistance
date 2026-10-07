@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="apply-hero">
+    <div class="portal-label">GVRN Applications</div>
+    <h1>Choose an Application</h1>
+    <p>Select the application you want to submit. Please only submit truthful and complete responses.</p>
+</div>
+
+<div class="application-grid">
+    <a class="application-card" href="/license-quiz">
+        <div class="application-icon">🚗</div>
+        <h2>License Application</h2>
+        <p>Take the driving/license quiz for civilian roleplay access.</p>
+        <span>Start License Application →</span>
+    </a>
+
+    <a class="application-card" href="/staff-application">
+        <div class="application-icon">🛡️</div>
+        <h2>Staff Application</h2>
+        <p>Apply to become part of the GVRN staff team.</p>
+        <span>Start Staff Application →</span>
+    </a>
+
+    <a class="application-card" href="/appeal">
+        <div class="application-icon">📨</div>
+        <h2>Appeal Application</h2>
+        <p>Submit an appeal for a moderation action or infraction.</p>
+        <span>Start Appeal →</span>
+    </a>
+</div>
+
+<style>
+.apply-hero {
+    text-align: center;
+    margin: 60px auto 34px;
+    max-width: 760px;
+}
+.apply-hero h1 {
+    font-size: clamp(42px, 6vw, 74px);
+    letter-spacing: -0.06em;
+    margin-bottom: 12px;
+}
+.apply-hero p {
+    font-size: 18px;
+}
+.application-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+}
+.application-card {
+    background: linear-gradient(180deg, rgba(17, 21, 27, 0.96), rgba(10, 13, 17, 0.96));
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 28px;
+    color: var(--text);
+    text-decoration: none;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+.application-card:hover {
+    transform: translateY(-4px);
+    border-color: #9ca3af;
+}
+.application-icon {
+    width: 54px;
+    height: 54px;
+    display: grid;
+    place-items: center;
+    border-radius: 16px;
+    background: #1f2937;
+    margin-bottom: 18px;
+    font-size: 28px;
+}
+.application-card p {
+    min-height: 72px;
+}
+.application-card span {
+    color: #d1d5db;
+    font-weight: 900;
+}
+@media (max-width: 900px) {
+    .application-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}

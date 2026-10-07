@@ -313,6 +313,10 @@ def admin_license_quiz():
     applications = load_json(LICENSE_QUIZ_FILE, [])
     return render_template("admin_license_quiz.html", user=current_user(), applications=list(reversed(applications)))
 
+@app.route("/apply")
+def apply_dashboard():
+    return render_template("apply_dashboard.html")
+
 
 if __name__ == "__main__":
     print("STAFF PORTAL ROUTES:", sorted(str(rule) for rule in app.url_map.iter_rules()))
