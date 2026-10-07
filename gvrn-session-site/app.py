@@ -37,13 +37,14 @@ def save_json(path, data):
 def ensure_admin():
     users = load_json(USERS_FILE, [])
 
-    admin_username = os.getenv("ADMIN_USERNAME", "owners")
+    admin_username = os.getenv("ADMIN_USERNAME", "admin")
     admin_password = os.getenv("ADMIN_PASSWORD", "civocisthebest")
 
-    admin = next((user for user in users if user.get("role") == "admin" and user.get("discord_user_id") == "owner-admin"), None)
+    admin = next((user for user in users if user.get("role") == "admin"), None)
 
     if admin:
         admin["username"] = admin_username
+        admin["discord_user_id"] = "owner-admin"
         admin["password_hash"] = generate_password_hash(admin_password)
     else:
         users.append({
@@ -56,7 +57,6 @@ def ensure_admin():
         })
 
     save_json(USERS_FILE, users)
-
 
 def current_user():
     user_id = session.get("user_id")
