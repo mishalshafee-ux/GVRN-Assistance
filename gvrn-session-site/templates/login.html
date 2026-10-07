@@ -1,15 +1,48 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="card">
-    <h2>Staff Login</h2>
-    <form method="post">
-        <label>Username</label>
-        <input name="username" required>
-
-        <label>Password</label>
-        <input name="password" type="password" required>
-
-        <button type="submit">Login</button>
-    </form>
+<div id="splash" class="splash-screen">
+    <div class="splash-kicker">WELCOME TO</div>
+    <div class="splash-title">GVRN <span>STAFF</span></div>
+    <div class="splash-subtitle">Greenville Roleplay Network staff operations portal.</div>
 </div>
+
+<div id="loginContent" class="login-shell hidden-login">
+    <section class="brand-side">
+        <div class="brand-mark">GV<br>RN</div>
+        <div class="brand-kicker">Welcome To</div>
+        <h1 class="brand-title">GVRN <span>STAFF</span></h1>
+        <p class="brand-subtitle">
+            Staff session logging, ticket records, owner notes, and internal management for Greenville Roleplay Network.
+        </p>
+    </section>
+
+    <section class="login-panel">
+        <div class="portal-label">GVRN Staff Access</div>
+        <div class="card">
+            <h2>Sign in</h2>
+            <p>Use your staff account to access the portal.</p>
+
+            <form method="post">
+                <label>Username</label>
+                <input name="username" required autocomplete="username">
+
+                <label>Password</label>
+                <input name="password" type="password" required autocomplete="current-password">
+
+                <button type="submit" style="width: 100%;">Sign in</button>
+            </form>
+
+            <div class="login-help">
+                Need an account? Contact an owner/admin to create one for you.
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+setTimeout(() => {
+    document.getElementById("splash").classList.add("splash-hide");
+    document.getElementById("loginContent").classList.remove("hidden-login");
+}, 3000);
+</script>
 {% endblock %}

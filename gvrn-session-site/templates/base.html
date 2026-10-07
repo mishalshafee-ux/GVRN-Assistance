@@ -255,3 +255,73 @@
 </main>
 </body>
 </html>
+<style>
+.splash-screen {
+    min-height: calc(100vh - 120px);
+    display: grid;
+    place-content: center;
+    text-align: center;
+    transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.splash-kicker {
+    color: #cbd5e1;
+    font-size: 16px;
+    letter-spacing: 0.45em;
+    font-weight: 900;
+    margin-bottom: 24px;
+}
+.splash-title {
+    font-size: clamp(64px, 10vw, 118px);
+    line-height: 0.9;
+    font-weight: 950;
+    letter-spacing: -0.07em;
+}
+.splash-title span {
+    color: #cbd5e1;
+}
+.splash-subtitle {
+    color: #94a3b8;
+    font-size: 18px;
+    margin-top: 22px;
+}
+.splash-hide {
+    opacity: 0;
+    transform: scale(0.97);
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+}
+.hidden-login {
+    display: none;
+}
+</style>
+<style>
+.account-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1.2fr;
+    gap: 10px;
+    align-items: start;
+}
+.account-grid input,
+.account-grid select {
+    margin-bottom: 0;
+}
+.password-row {
+    display: grid;
+    grid-template-columns: 1fr 42px;
+    gap: 8px;
+}
+.icon-btn {
+    height: 48px;
+    padding: 0;
+    border-radius: 8px;
+}
+.account-grid button[type="submit"] {
+    width: fit-content;
+}
+@media (max-width: 900px) {
+    .account-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
