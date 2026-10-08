@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="toplinks">
+    <a class="btn btn-secondary" href="/staff-dashboard">Back</a>
+</div>
+
+<div class="card">
+    <h2>Owner Personal Log</h2>
+    <form method="post">
+        <label>Title</label>
+        <input name="title" required>
+
+        <label>Notes</label>
+        <textarea name="notes" rows="7" required></textarea>
+
+        <button type="submit">Save Personal Log</button>
+    </form>
+</div>
+
+<h2>Personal Logs</h2>
+{% for log in logs %}
+<div class="card">
+    <h3>{{ log.title }}</h3>
+    <p>{{ log.notes }}</p>
+    <small>Saved by {{ log.created_by }} | {{ log.created_at }}</small>
+</div>
+{% else %}
+<div class="card">No personal logs yet.</div>
+{% endfor %}
+{% endblock %}
