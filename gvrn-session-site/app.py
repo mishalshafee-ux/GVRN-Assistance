@@ -119,7 +119,7 @@ def logout():
     return redirect(url_for("login"))
 
 
-@app.route("/dashboard")
+@app.route("/staff-dashboard")
 @login_required
 def dashboard():
     user = current_user()
@@ -549,6 +549,10 @@ def review_appeal_application(application_id):
     else:
         flash(f"Appeal {decision.lower()}, but Discord message was not sent: {webhook_message}")
     return redirect(url_for("admin_appeals"))
+
+@app.route("/dashboard")
+def civilian_dashboard():
+    return render_template("civilian_dashboard.html")
 
 
 if __name__ == "__main__":

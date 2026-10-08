@@ -427,7 +427,7 @@ pre {
     </div>
 </div>
 <header>
-    {% if request.path.startswith('/apply') or request.path.startswith('/license-quiz') or request.path.startswith('/staff-application') or request.path.startswith('/appeal') %}
+    {% if request.path == '/dashboard' or request.path.startswith('/apply') or request.path.startswith('/license-quiz') or request.path.startswith('/staff-application') or request.path.startswith('/appeal') %}
         GVRN Civilian Portal
     {% else %}
         GVRN Staff Portal

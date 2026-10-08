@@ -1,251 +1,43 @@
 {% extends "base.html" %}
 {% block content %}
 <section class="civilian-hero">
-    <div class="portal-label">GVRN Civilian Portal</div>
-    <h1>Welcome to Greenville Roleplay Network</h1>
-    <p>
-        Your hub for applications, roleplay information, session guidance, and frequently asked questions.
-    </p>
-
-    <div class="hero-actions">
-        <a class="btn" href="#applications">Start an Application</a>
-        <a class="btn btn-secondary" href="#about">Get to Know GVRN</a>
-    </div>
+    <div class="portal-label">GVRN Applications</div>
+    <h1>Choose an Application</h1>
+    <p>Select the application you want to submit. Please only submit truthful and complete responses.</p>
 </section>
 
-<section class="dashboard-grid" id="about">
-    <div class="dash-card wide">
-        <div class="dash-icon">🌐</div>
-        <h2>Get to Know GVRN</h2>
-        <p>
-            Greenville Roleplay Network is a community focused on organized, enjoyable, and realistic roleplay.
-            Members are expected to follow traffic laws, respect staff, and keep sessions professional and fun.
-        </p>
-    </div>
+<div class="application-grid">
+    <a class="application-card" href="/license-quiz">
+        <div class="application-icon">🚗</div>
+        <h2>License Application</h2>
+        <p>Take the driving/license quiz for civilian roleplay access.</p>
+        <span>Start License Application →</span>
+    </a>
 
-    <div class="dash-card">
-        <div class="dash-icon">🎃</div>
-        <h2>Community Focus</h2>
-        <p>
-            We value active roleplayers, respectful members, helpful staff, and clean roleplay scenes.
-        </p>
-    </div>
+    <a class="application-card" href="/staff-application">
+        <div class="application-icon">🛡️</div>
+        <h2>Staff Application</h2>
+        <p>Apply to become part of the GVRN staff team.</p>
+        <span>Start Staff Application →</span>
+    </a>
 
-    <div class="dash-card">
-        <div class="dash-icon">🚦</div>
-        <h2>Roleplay Standards</h2>
-        <p>
-            Follow road laws, avoid reckless driving, use signals, and respect session rules.
-        </p>
-    </div>
-</section>
-
-<section id="applications" class="section-block">
-    <div class="section-title">
-        <div class="portal-label">Applications</div>
-        <h2>Choose What You Need</h2>
-        <p>Select one of the forms below. Staff will review your submission once it is sent.</p>
-    </div>
-
-    <div class="application-grid">
-        <a class="application-card" href="/license-quiz">
-            <div class="application-icon">🚗</div>
-            <h2>License Application</h2>
-            <p>Take the driving/license quiz for civilian roleplay access.</p>
-            <span>Start License Application →</span>
-        </a>
-
-        <a class="application-card" href="/staff-application">
-            <div class="application-icon">🛡️</div>
-            <h2>Staff Application</h2>
-            <p>Apply to become part of the GVRN staff team.</p>
-            <span>Start Staff Application →</span>
-        </a>
-
-        <a class="application-card" href="/appeal">
-            <div class="application-icon">📨</div>
-            <h2>Appeal Application</h2>
-            <p>Submit an appeal for a moderation action or infraction.</p>
-            <span>Start Appeal →</span>
-        </a>
-    </div>
-</section>
-
-<section class="dashboard-grid">
-    <div class="dash-card">
-        <div class="dash-icon">📢</div>
-        <h2>How Sessions Work</h2>
-        <p>
-            Staff host roleplay sessions in Discord. Read all posted session information before joining.
-        </p>
-    </div>
-
-    <div class="dash-card">
-        <div class="dash-icon">🎫</div>
-        <h2>Need Help?</h2>
-        <p>
-            Open a ticket in Discord if you need support, have questions, or need assistance with applications.
-        </p>
-    </div>
-
-    <div class="dash-card">
-        <div class="dash-icon">✅</div>
-        <h2>After Applying</h2>
-        <p>
-            Your application will be reviewed by staff. Results may be posted through the official result channel.
-        </p>
-    </div>
-</section>
-
-<section class="faq-section">
-    <div class="section-title">
-        <div class="portal-label">FAQ</div>
-        <h2>Frequently Asked Questions</h2>
-    </div>
-
-    <div class="faq-list">
-        <details>
-            <summary>How do I get licensed?</summary>
-            <p>Submit the License Application and wait for staff to review your answers.</p>
-        </details>
-
-        <details>
-            <summary>Can I apply for staff?</summary>
-            <p>Yes. Use the Staff Application and answer every question honestly and with detail.</p>
-        </details>
-
-        <details>
-            <summary>What if I was infracted unfairly?</summary>
-            <p>Use the Appeal Application and include your perspective, evidence, and any important context.</p>
-        </details>
-
-        <details>
-            <summary>Where do I ask questions?</summary>
-            <p>Open a support ticket in the Discord server so staff can help you.</p>
-        </details>
-    </div>
-</section>
+    <a class="application-card" href="/appeal">
+        <div class="application-icon">📨</div>
+        <h2>Appeal Application</h2>
+        <p>Submit an appeal for a moderation action or infraction.</p>
+        <span>Start Appeal →</span>
+    </a>
+</div>
 
 <style>
-.civilian-hero {
-    text-align: center;
-    max-width: 900px;
-    margin: 60px auto 46px;
-}
-.civilian-hero h1 {
-    font-size: clamp(46px, 7vw, 86px);
-    letter-spacing: -0.07em;
-    line-height: 0.95;
-    margin-bottom: 18px;
-}
-.civilian-hero p {
-    font-size: 19px;
-    max-width: 740px;
-    margin: 0 auto;
-}
-.hero-actions {
-    display: flex;
-    justify-content: center;
-    gap: 12px;
-    margin-top: 28px;
-    flex-wrap: wrap;
-}
-.dashboard-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 18px;
-    margin-bottom: 38px;
-}
-.dash-card {
-    background: linear-gradient(180deg, rgba(23, 20, 33, 0.96), rgba(10, 8, 15, 0.97));
-    border: 1px solid var(--border);
-    border-radius: 18px;
-    padding: 26px;
-    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.32);
-}
-.dash-card.wide {
-    grid-column: span 3;
-}
-.dash-icon {
-    width: 52px;
-    height: 52px;
-    display: grid;
-    place-items: center;
-    border-radius: 16px;
-    background: #1d1727;
-    font-size: 26px;
-    margin-bottom: 16px;
-}
-.section-block {
-    margin: 44px 0;
-}
-.section-title {
-    text-align: center;
-    max-width: 720px;
-    margin: 0 auto 24px;
-}
-.section-title h2 {
-    font-size: clamp(34px, 5vw, 56px);
-    letter-spacing: -0.05em;
-}
-.application-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 18px;
-}
-.application-card {
-    background: linear-gradient(180deg, rgba(17, 21, 27, 0.96), rgba(10, 13, 17, 0.96));
-    border: 1px solid var(--border);
-    border-radius: 18px;
-    padding: 28px;
-    color: var(--text);
-    text-decoration: none;
-    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
-    transition: transform 0.2s ease, border-color 0.2s ease;
-}
-.application-card:hover {
-    transform: translateY(-4px);
-    border-color: var(--accent);
-}
-.application-icon {
-    width: 54px;
-    height: 54px;
-    display: grid;
-    place-items: center;
-    border-radius: 16px;
-    background: #1f2937;
-    margin-bottom: 18px;
-    font-size: 28px;
-}
-.application-card span {
-    color: #ffb86b;
-    font-weight: 900;
-}
-.faq-section {
-    margin: 46px 0 80px;
-}
-.faq-list {
-    display: grid;
-    gap: 12px;
-}
-details {
-    background: linear-gradient(180deg, rgba(23, 20, 33, 0.96), rgba(10, 8, 15, 0.97));
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 18px 20px;
-}
-summary {
-    cursor: pointer;
-    font-weight: 900;
-}
-@media (max-width: 900px) {
-    .dashboard-grid,
-    .application-grid {
-        grid-template-columns: 1fr;
-    }
-    .dash-card.wide {
-        grid-column: span 1;
-    }
-}
+.civilian-hero { text-align: center; max-width: 900px; margin: 60px auto 46px; }
+.civilian-hero h1 { font-size: clamp(46px, 7vw, 86px); letter-spacing: -0.07em; line-height: 0.95; margin-bottom: 18px; }
+.civilian-hero p { font-size: 19px; max-width: 740px; margin: 0 auto; }
+.application-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.application-card { background: linear-gradient(180deg, rgba(17,21,27,.96), rgba(10,13,17,.96)); border: 1px solid var(--border); border-radius: 18px; padding: 28px; color: var(--text); text-decoration: none; transition: transform .2s ease, border-color .2s ease; }
+.application-card:hover { transform: translateY(-4px); border-color: var(--accent); }
+.application-icon { width: 54px; height: 54px; display: grid; place-items: center; border-radius: 16px; background: #1f2937; margin-bottom: 18px; font-size: 28px; }
+.application-card span { color: #ffb86b; font-weight: 900; }
+@media (max-width: 900px) { .application-grid { grid-template-columns: 1fr; } }
 </style>
 {% endblock %}
