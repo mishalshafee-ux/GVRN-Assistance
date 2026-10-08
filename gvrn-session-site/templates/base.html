@@ -1,7 +1,13 @@
 <!doctype html>
 <html>
 <head>
-    <title>GVRN Staff Portal</title>
+    <title>
+    {% if request.path == '/dashboard' or request.path.startswith('/apply') or request.path.startswith('/license-quiz') or request.path.startswith('/staff-application') or request.path.startswith('/appeal') %}
+        GVRN Civilian Portal
+    {% else %}
+        GVRN Staff Portal
+    {% endif %}
+    </title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <style>
