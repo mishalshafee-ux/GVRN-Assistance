@@ -298,25 +298,64 @@ LICENSE_QUIZ_QUESTIONS = [
     "Why is following traffic laws important during roleplay?",
 ]
 
+def clean_discord_id(value):
+    value = str(value or "").strip()
+    value = value.replace("<@", "").replace(">", "").replace("!", "")
+    return "".join(ch for ch in value if ch.isdigit())
+
+
+def build_result_payload(application, decision, reason, reviewer, application_name):
+    answers = application.get("answers", {})
+    discord_id = clean_discord_id(answers.get("What is your Discord User ID?", ""))
+
+    color = 0x22C55E if decision == "Accepted" else 0xEF4444
+    emoji = "✅" if decision == "Accepted" else "❌"
+
+    mention = f"<@{discord_id}>" if discord_id else ""
+
+    embed = {
+        "title": f"{emoji} {application_name} {decision}",
+        "description": (
+            f"{mention}\n\n"
+            f"Your **{application_name}** has been **{decision.lower()}**."
+        ).strip(),
+        "color": color,
+        "fields": [
+            {
+                "name": "Reviewed By",
+                "value": reviewer or "Unknown",
+                "inline": True,
+            },
+            {
+                "name": "Reason",
+                "value": reason or "No reason provided.",
+                "inline": False,
+            },
+        ],
+        "footer": {
+            "text": "Greenville Roleplay Network Applications"
+        },
+    }
+
+    payload = {
+        "content": mention,
+        "embeds": [embed],
+        "allowed_mentions": {
+            "users": [discord_id] if discord_id else []
+        },
+    }
+
+    return payload
+
 def send_license_result_webhook(application, decision, reason, reviewer):
     webhook_url = get_application_webhook_url("LICENSE_RESULT_WEBHOOK_URL")
     if not webhook_url:
         return False, "No webhook URL set."
 
-    answers = application.get("answers", {})
-    roblox = answers.get("What is your Roblox username?", "Unknown")
-    discord_id = answers.get("What is your Discord User ID?", "Unknown")
-
-    content = (
-        f"**License Quiz {decision}**\n"
-        f"**Roblox Username:** {roblox}\n"
-        f"**Discord User ID:** {discord_id}\n"
-        f"**Reviewed By:** {reviewer}\n"
-        f"**Reason:** {reason}"
-    )
+    payload = build_result_payload(application, decision, reason, reviewer, "License Quiz")
 
     try:
-        response = requests.post(webhook_url, json={"content": content}, timeout=10)
+        response = requests.post(webhook_url, json=payload, timeout=10)
         if response.status_code >= 300:
             return False, f"Discord returned HTTP {response.status_code}: {response.text[:200]}"
         return True, "Sent."
@@ -452,20 +491,10 @@ def send_application_webhook(webhook_env, application, decision, reason, reviewe
     if not webhook_url:
         return False, "No webhook URL set."
 
-    answers = application.get("answers", {})
-    roblox = answers.get("What is your Roblox username?", "Unknown")
-    discord_id = answers.get("What is your Discord User ID?", "Unknown")
-
-    content = (
-        f"**{application_name} {decision}**\n"
-        f"**Roblox Username:** {roblox}\n"
-        f"**Discord User ID:** {discord_id}\n"
-        f"**Reviewed By:** {reviewer}\n"
-        f"**Reason:** {reason}"
-    )
+    payload = build_result_payload(application, decision, reason, reviewer, application_name)
 
     try:
-        response = requests.post(webhook_url, json={"content": content}, timeout=10)
+        response = requests.post(webhook_url, json=payload, timeout=10)
         if response.status_code >= 300:
             return False, f"Discord returned HTTP {response.status_code}: {response.text[:200]}"
         return True, "Sent."
