@@ -7,7 +7,7 @@ from functools import wraps
 from pathlib import Path
 
 from dotenv import load_dotenv
-from flask import Flask, flash, jsonify, redirect, render_template, request, session, url_for
+from flask import send_from_directory, Flask, flash, jsonify, redirect, render_template, request, session, url_for
 from werkzeug.security import check_password_hash, generate_password_hash
 
 load_dotenv()
@@ -662,6 +662,11 @@ def admin_settings():
 
     return render_template("settings.html", user=current_user(), settings=settings)
 
+
+
+@app.route("/halloween-logo.gif")
+def halloween_logo():
+    return send_from_directory(app.static_folder, "halloween-logo.gif")
 
 if __name__ == "__main__":
     print("STAFF PORTAL ROUTES:", sorted(str(rule) for rule in app.url_map.iter_rules()))
