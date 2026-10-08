@@ -31,6 +31,9 @@
     <b>{{ account.username }}</b>
     <p>Discord ID: {{ account.discord_user_id }}</p>
     <p>Role: {{ account.role }}</p>
+    <form method="post" action="/admin/users/{{ account.id }}/delete" onsubmit="return confirm('Delete this account permanently?');">
+        <button type="submit" class="delete-btn">Delete Account</button>
+    </form>
 </div>
 {% endfor %}
 
@@ -45,3 +48,10 @@ function randomPassword() {
 }
 </script>
 {% endblock %}
+
+<style>
+.delete-btn {
+    background: linear-gradient(135deg, #fb7185, #dc2626);
+    color: white;
+}
+</style>

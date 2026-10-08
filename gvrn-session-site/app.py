@@ -554,6 +554,57 @@ def review_appeal_application(application_id):
 def civilian_dashboard():
     return render_template("civilian_dashboard.html")
 
+def delete_item_from_file(path, item_id):
+    items = load_json(path, [])
+    new_items = [item for item in items if item.get("id") != item_id]
+    save_json(path, new_items)
+    return len(items) != len(new_items)
+
+
+@app.route("/admin/license-quiz/<application_id>/delete", methods=["POST"])
+@login_required
+@admin_required
+def delete_license_quiz(application_id):
+    delete_item_from_file(LICENSE_QUIZ_FILE, application_id)
+    flash("License quiz application deleted.")
+    return redirect(url_for("admin_license_quiz"))
+
+
+@app.route("/admin/staff-applications/<application_id>/delete", methods=["POST"])
+@login_required
+@admin_required
+def delete_staff_application(application_id):
+    delete_item_from_file(STAFF_APPLICATION_FILE, application_id)
+    flash("Staff application deleted.")
+    return redirect(url_for("admin_staff_applications"))
+
+
+@app.route("/admin/appeals/<application_id>/delete", methods=["POST"])
+@login_required
+@admin_required
+def delete_appeal(application_id):
+    delete_item_from_file(APPEAL_APPLICATION_FILE, application_id)
+    flash("Appeal deleted.")
+    return redirect(url_for("admin_appeals"))
+
+
+@app.route("/admin/users/<user_id>/delete", methods=["POST"])
+@login_required
+@admin_required
+def delete_user(user_id):
+    user = current_user()
+
+    if user and user.get("id") == user_id:
+        flash("You cannot delete your own admin account.")
+        return redirect(url_for("manage_users"))
+
+    users = load_json(USERS_FILE, [])
+    users = [account for account in users if account.get("id") != user_id]
+    save_json(USERS_FILE, users)
+
+    flash("Account deleted.")
+    return redirect(url_for("manage_users"))
+
 
 if __name__ == "__main__":
     print("STAFF PORTAL ROUTES:", sorted(str(rule) for rule in app.url_map.iter_rules()))
