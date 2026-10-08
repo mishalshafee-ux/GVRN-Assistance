@@ -285,7 +285,7 @@ LICENSE_QUIZ_QUESTIONS = [
 ]
 
 def send_license_result_webhook(application, decision, reason, reviewer):
-    webhook_url = os.getenv("LICENSE_RESULT_WEBHOOK_URL", "") or os.getenv("APPLICATION_RESULT_WEBHOOK_URL", "")
+    webhook_url = os.getenv("LICENSE_RESULT_WEBHOOK_URL", "") or os.getenv("LICENSE_RESULT_WEBHOOK", "") or os.getenv("APPLICATION_RESULT_WEBHOOK_URL", "") or os.getenv("APPLICATION_RESULT_WEBHOOK", "")
     if not webhook_url:
         return False, "No webhook URL set."
 
@@ -434,7 +434,7 @@ def save_application(path, questions, form):
 
 
 def send_application_webhook(webhook_env, application, decision, reason, reviewer, application_name):
-    webhook_url = os.getenv(webhook_env, "") or os.getenv("APPLICATION_RESULT_WEBHOOK_URL", "")
+    webhook_url = os.getenv(webhook_env, "") or os.getenv(webhook_env.replace("_URL", ""), "") or os.getenv("APPLICATION_RESULT_WEBHOOK_URL", "") or os.getenv("APPLICATION_RESULT_WEBHOOK", "")
     if not webhook_url:
         return False, "No webhook URL set."
 
