@@ -426,7 +426,13 @@ pre {
         <div class="loader-text">Loading</div>
     </div>
 </div>
-<header>GVRN Staff Portal</header>
+<header>
+    {% if request.path.startswith('/apply') or request.path.startswith('/license-quiz') or request.path.startswith('/staff-application') or request.path.startswith('/appeal') %}
+        GVRN Civilian Portal
+    {% else %}
+        GVRN Staff Portal
+    {% endif %}
+</header>
 <main>
     {% with messages = get_flashed_messages() %}
         {% for message in messages %}
