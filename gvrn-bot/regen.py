@@ -65,7 +65,7 @@ class Regen(commands.Cog):
 
         embed = discord.Embed(
             description=(
-                f"·❤· **__{REGEN_TITLE}__** ·❤·\n\n"
+                f"**__{REGEN_TITLE}__**\n\n"
                 f"{REGEN_DESCRIPTION}\n\n"
                 f"**{SERVER_NAME}**"
             ),

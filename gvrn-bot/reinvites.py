@@ -88,7 +88,7 @@ class ReInvites(commands.Cog):
 
         embed = discord.Embed(
             description=(
-                f"❤ **{REINVITES_TITLE}** ❤\n\n"
+                f"**{REINVITES_TITLE}**\n\n"
                 f"▬ {interaction.user.mention} has now released **reinvites** for their session! "
                 f"You are welcome to join using the code found below. Before joining the session, "
                 f"ensure you've read the information below regarding the session.\n\n"
