@@ -463,6 +463,26 @@ pre {
     }
 }
 
+
+.animated-gvrn-logo {
+    animation: gvrnLogoFloat 4s ease-in-out infinite, gvrnLogoGlow 2.5s ease-in-out infinite !important;
+    will-change: transform, box-shadow;
+}
+
+@keyframes gvrnLogoFloat {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-12px) scale(1.04); }
+}
+
+@keyframes gvrnLogoGlow {
+    0%, 100% {
+        box-shadow: 0 0 28px rgba(245,147,95,.35), 0 0 80px rgba(181,107,255,.18);
+    }
+    50% {
+        box-shadow: 0 0 55px rgba(245,147,95,.75), 0 0 125px rgba(181,107,255,.45);
+    }
+}
+
 </style>
 </head>
 <body>
@@ -513,6 +533,18 @@ window.addEventListener("pageshow", () => {
     if (loader) loader.classList.remove("active");
 });
 </script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll("div, section, article").forEach((el) => {
+        const text = el.textContent.replace(/\s+/g, " ").trim();
+        if (text === "GV RN") {
+            el.classList.add("animated-gvrn-logo");
+        }
+    });
+});
+</script>
+
 </body>
 </html>
 <style>
@@ -592,6 +624,26 @@ window.addEventListener("pageshow", () => {
     }
 }
 
+
+.animated-gvrn-logo {
+    animation: gvrnLogoFloat 4s ease-in-out infinite, gvrnLogoGlow 2.5s ease-in-out infinite !important;
+    will-change: transform, box-shadow;
+}
+
+@keyframes gvrnLogoFloat {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-12px) scale(1.04); }
+}
+
+@keyframes gvrnLogoGlow {
+    0%, 100% {
+        box-shadow: 0 0 28px rgba(245,147,95,.35), 0 0 80px rgba(181,107,255,.18);
+    }
+    50% {
+        box-shadow: 0 0 55px rgba(245,147,95,.75), 0 0 125px rgba(181,107,255,.45);
+    }
+}
+
 </style>
 <style>
 .account-grid {
@@ -657,6 +709,26 @@ window.addEventListener("pageshow", () => {
         box-shadow:
             0 0 45px rgba(245, 147, 95, 0.55),
             0 0 110px rgba(167, 89, 255, 0.35);
+    }
+}
+
+
+.animated-gvrn-logo {
+    animation: gvrnLogoFloat 4s ease-in-out infinite, gvrnLogoGlow 2.5s ease-in-out infinite !important;
+    will-change: transform, box-shadow;
+}
+
+@keyframes gvrnLogoFloat {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-12px) scale(1.04); }
+}
+
+@keyframes gvrnLogoGlow {
+    0%, 100% {
+        box-shadow: 0 0 28px rgba(245,147,95,.35), 0 0 80px rgba(181,107,255,.18);
+    }
+    50% {
+        box-shadow: 0 0 55px rgba(245,147,95,.75), 0 0 125px rgba(181,107,255,.45);
     }
 }
 
