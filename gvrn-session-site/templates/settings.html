@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="toplinks">
+    <a class="btn btn-secondary" href="/staff-dashboard">Back</a>
+</div>
+
+<div class="card">
+    <div class="portal-label">Admin Settings</div>
+    <h2>Application Result Webhook</h2>
+    <p>Paste the Discord webhook URL where accepted/denied application results should be sent.</p>
+
+    <form method="post">
+        <label>Application Result Webhook URL</label>
+        <input name="application_result_webhook_url" type="password" value="{{ settings.application_result_webhook_url or '' }}" placeholder="https://discord.com/api/webhooks/...">
+
+        <button type="submit">Save Settings</button>
+    </form>
+</div>
+{% endblock %}

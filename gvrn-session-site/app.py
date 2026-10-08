@@ -18,6 +18,7 @@ app.secret_key = os.getenv("SECRET_KEY", "change-this-secret-key")
 DATA_DIR = Path("data")
 USERS_FILE = DATA_DIR / "users.json"
 LOGS_FILE = DATA_DIR / "session_logs.json"
+SETTINGS_FILE = DATA_DIR / "site_settings.json"
 LICENSE_QUIZ_FILE = DATA_DIR / "license_quiz_applications.json"
 PERSONAL_LOGS_FILE = DATA_DIR / "personal_logs.json"
 TRANSCRIPTS_FILE = DATA_DIR / "ticket_transcripts.json"
@@ -92,6 +93,19 @@ def admin_required(route):
 @app.before_request
 def setup():
     ensure_admin()
+
+def get_application_webhook_url(webhook_env=None):
+    env_url = ""
+    if webhook_env:
+        env_url = os.getenv(webhook_env, "") or os.getenv(webhook_env.replace("_URL", ""), "")
+
+    settings = load_json(SETTINGS_FILE, {})
+    return (
+        env_url
+        or os.getenv("APPLICATION_RESULT_WEBHOOK_URL", "")
+        or os.getenv("APPLICATION_RESULT_WEBHOOK", "")
+        or settings.get("application_result_webhook_url", "")
+    )
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -285,7 +299,7 @@ LICENSE_QUIZ_QUESTIONS = [
 ]
 
 def send_license_result_webhook(application, decision, reason, reviewer):
-    webhook_url = os.getenv("LICENSE_RESULT_WEBHOOK_URL", "") or os.getenv("LICENSE_RESULT_WEBHOOK", "") or os.getenv("APPLICATION_RESULT_WEBHOOK_URL", "") or os.getenv("APPLICATION_RESULT_WEBHOOK", "")
+    webhook_url = get_application_webhook_url("LICENSE_RESULT_WEBHOOK_URL")
     if not webhook_url:
         return False, "No webhook URL set."
 
@@ -434,7 +448,7 @@ def save_application(path, questions, form):
 
 
 def send_application_webhook(webhook_env, application, decision, reason, reviewer, application_name):
-    webhook_url = os.getenv(webhook_env, "") or os.getenv(webhook_env.replace("_URL", ""), "") or os.getenv("APPLICATION_RESULT_WEBHOOK_URL", "") or os.getenv("APPLICATION_RESULT_WEBHOOK", "")
+    webhook_url = get_application_webhook_url(webhook_env)
     if not webhook_url:
         return False, "No webhook URL set."
 
@@ -604,6 +618,20 @@ def delete_user(user_id):
 
     flash("Account deleted.")
     return redirect(url_for("manage_users"))
+
+@app.route("/admin/settings", methods=["GET", "POST"])
+@login_required
+@admin_required
+def admin_settings():
+    settings = load_json(SETTINGS_FILE, {})
+
+    if request.method == "POST":
+        settings["application_result_webhook_url"] = request.form.get("application_result_webhook_url", "").strip()
+        save_json(SETTINGS_FILE, settings)
+        flash("Settings saved.")
+        return redirect(url_for("admin_settings"))
+
+    return render_template("settings.html", user=current_user(), settings=settings)
 
 
 if __name__ == "__main__":
