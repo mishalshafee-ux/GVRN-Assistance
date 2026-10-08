@@ -8,6 +8,7 @@
         GVRN Staff Portal
     {% endif %}
     </title>
+    <link rel="icon" type="image/gif" href="/static/halloween-logo.gif">
     <link rel="icon" type="image/gif" href="/static/favicon.gif">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -424,6 +425,15 @@ pre {
         max-width: none;
     }
 }
+
+.header-logo {
+    width: 34px;
+    height: 34px;
+    object-fit: contain;
+    vertical-align: middle;
+    margin-right: 10px;
+    border-radius: 8px;
+}
 </style>
 </head>
 <body>
@@ -433,7 +443,7 @@ pre {
         <div class="loader-text">Loading</div>
     </div>
 </div>
-<header>
+<header><img src="/static/halloween-logo.gif" class="header-logo" alt="GVRN Logo">
     {% if request.path == '/dashboard' or request.path.startswith('/apply') or request.path.startswith('/license-quiz') or request.path.startswith('/staff-application') or request.path.startswith('/appeal') %}
         GVRN Civilian Portal
     {% else %}
@@ -515,6 +525,15 @@ window.addEventListener("pageshow", () => {
 .hidden-login {
     display: none;
 }
+
+.header-logo {
+    width: 34px;
+    height: 34px;
+    object-fit: contain;
+    vertical-align: middle;
+    margin-right: 10px;
+    border-radius: 8px;
+}
 </style>
 <style>
 .account-grid {
@@ -544,5 +563,14 @@ window.addEventListener("pageshow", () => {
     .account-grid {
         grid-template-columns: 1fr;
     }
+}
+
+.header-logo {
+    width: 34px;
+    height: 34px;
+    object-fit: contain;
+    vertical-align: middle;
+    margin-right: 10px;
+    border-radius: 8px;
 }
 </style>
