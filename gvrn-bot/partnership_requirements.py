@@ -4,8 +4,8 @@ from datetime import datetime, timedelta, timezone
 import discord
 from discord.ext import commands
 
-DOT_EMOJI = os.getenv("PARTNER_DOT_EMOJI", "<:dot:1533231424532906014>")
-ARROW_EMOJI = os.getenv("PARTNER_ARROW_EMOJI", "<:arrow:1533216371326980266>")
+DOT_EMOJI = os.getenv("PARTNER_DOT_EMOJI", "<<:dot:1558128831301419222>1533231424532906014>")
+ARROW_EMOJI = os.getenv("PARTNER_ARROW_EMOJI", "<<:arrow:1356660425655320859>1533216371326980266>")
 
 TICKET_CATEGORY_IDS = {
     int(os.getenv("MARKETPLACE_TICKET_CATEGORY_ID", "0")),
