@@ -517,8 +517,8 @@ class Tickets(commands.Cog):
 import json as _partner_json
 from pathlib import Path as _PartnerPath
 
-PARTNER_DOT = "<<:dot:1558128831301419222>1558128831301419222>"
-PARTNER_ARROW = "<<:arrow:1356660425655320859>1356660425655320859>"
+PARTNER_DOT = "<<<:dot:1558128831301419222>1558128831301419222>1558128831301419222>"
+PARTNER_ARROW = "<<<:arrow:1356660425655320859>1356660425655320859>1356660425655320859>"
 PARTNER_NOTICE_FILE = _PartnerPath(__file__).with_name("partner_notice_sent.json")
 
 def _load_partner_notice_sent():
