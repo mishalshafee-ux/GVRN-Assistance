@@ -180,10 +180,38 @@ class AITicketAssistant(commands.Cog):
                 )
                 return
 
-        if (
-            "partnership" in lowered
-            or "partner" in lowered
+        requirement_words = (
+            "requirement",
+            "requirements",
+            "criteria",
+            "what do i need",
+            "how do i partner",
+        )
+
+        advertisement_words = (
+            "send my ad",
+            "send an ad",
+            "submit my ad",
+            "submit an advertisement",
+            "post my ad",
+            "post an advertisement",
+        )
+
+        if any(word in lowered for word in requirement_words) and not any(
+            word in lowered for word in advertisement_words
         ):
+            await message.reply(
+                "**GVRN Partnership Requirements**\\n\\n"
+                "**0-20 members:** No ping for your server; GVRN uses an @here ping.\\n"
+                "**21-50 members:** Your server uses an @here ping; GVRN uses an @everyone ping.\\n"
+                "**51+ members:** Both servers may use an @everyone ping.\\n\\n"
+                "Your advertisement must clearly show your server name, invite link, "
+                "community type, and partnership information.",
+                mention_author=False,
+            )
+            return
+
+        if any(word in lowered for word in advertisement_words):
             PARTNER_TICKETS[ticket_id] = {
                 "user_id": user_id,
                 "stage": "member_count",
