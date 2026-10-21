@@ -569,5 +569,4 @@ async def send_partner_notice_once(message):
     _save_partner_notice_sent(sent)
 
 async def setup(bot):
-    bot.add_listener(send_partner_notice_once, "on_message")
     await bot.add_cog(Tickets(bot))
