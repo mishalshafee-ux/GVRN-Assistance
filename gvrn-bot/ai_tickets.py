@@ -85,10 +85,16 @@ class AITicketAssistant(commands.Cog):
         if message.author.bot or not message.guild:
             return
 
-        if not is_ticket_channel(message.channel):
+        mentioned = self.bot.user is not None and self.bot.user in message.mentions
+
+        if not is_ticket_channel(message.channel) and not mentioned:
             return
 
         content = (message.content or "").strip()
+
+        if mentioned:
+            content = content.replace(self.bot.user.mention, "").strip()
+
         lowered = content.lower()
         ticket_id = message.channel.id
         user_id = message.author.id
