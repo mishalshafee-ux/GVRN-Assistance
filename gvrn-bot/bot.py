@@ -33,6 +33,7 @@ EXTENSIONS = [
     "welcome",
     "command_list",
     "partnership_requirements",
+    "ai_tickets",
     "verification",
     "advertisements",
     "applications",
