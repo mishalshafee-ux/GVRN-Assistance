@@ -517,8 +517,8 @@ class Tickets(commands.Cog):
 import json as _partner_json
 from pathlib import Path as _PartnerPath
 
-PARTNER_DOT = "<<<:dot:1558128831301419222>1558128831301419222>1558128831301419222>"
-PARTNER_ARROW = "<<<:arrow:1356660425655320859>1356660425655320859>1356660425655320859>"
+PARTNER_DOT = ""
+PARTNER_ARROW = ""
 PARTNER_NOTICE_FILE = _PartnerPath(__file__).with_name("partner_notice_sent.json")
 
 def _load_partner_notice_sent():
@@ -553,7 +553,7 @@ async def send_partner_notice_once(message):
         return
 
     embed = discord.Embed(
-        title=f"{PARTNER_DOT} GVRN Partnership Information",
+        title="GVRN Partnership Information",
         description=(
             f"{PARTNER_ARROW} Thank you for your interest in partnering with **Greenville Roleplay Network**.\n\n"
             f"{PARTNER_DOT} Please provide your server name, invite link, community type, and why you want to partner with GVRN.\n"

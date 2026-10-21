@@ -4,8 +4,8 @@ from datetime import datetime, timedelta, timezone
 import discord
 from discord.ext import commands
 
-DOT_EMOJI = os.getenv("PARTNER_DOT_EMOJI", "<<<:dot:1558128831301419222>1558128831301419222>1533231424532906014>")
-ARROW_EMOJI = os.getenv("PARTNER_ARROW_EMOJI", "<<<:arrow:1356660425655320859>1356660425655320859>1533216371326980266>")
+DOT_EMOJI = ""
+ARROW_EMOJI = ""
 
 TICKET_CATEGORY_IDS = {
     int(os.getenv("MARKETPLACE_TICKET_CATEGORY_ID", "0")),
@@ -33,11 +33,11 @@ def is_ticket_channel(channel: discord.abc.GuildChannel):
 def requirements_text():
     return (
         "**Partnership Requirements**\n\n"
-        f"{DOT_EMOJI} **0-20 Members** {ARROW_EMOJI} You get no ping, we get here ping. "
-        "- 3 members from your server join ours.\n\n"
-        f"{DOT_EMOJI} **21-50 Members** {ARROW_EMOJI} You get here ping, we get everyone ping. "
-        "- 2 members join from your server.\n\n"
-        f"{DOT_EMOJI} **51+ Members** {ARROW_EMOJI} You get everyone ping, we get everyone ping."
+        "**0-20 Members:** You get no ping, we get here ping. "
+        "Three members from your server must join ours.\n\n"
+        "**21-50 Members:** You get here ping, we get everyone ping. "
+        "Two members from your server must join ours.\n\n"
+        "**51+ Members:** You get everyone ping, we get everyone ping."
     )
 
 
@@ -65,7 +65,7 @@ class PartnershipRequirements(commands.Cog):
             return
 
         COOLDOWN[key] = now
-        await message.reply(requirements_text(), mention_author=False)
+        return
 
 
 async def setup(bot):
