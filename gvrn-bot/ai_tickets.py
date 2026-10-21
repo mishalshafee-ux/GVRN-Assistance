@@ -99,6 +99,22 @@ class AITicketAssistant(commands.Cog):
         ticket_id = message.channel.id
         user_id = message.author.id
 
+        ad_request_words = (
+            "send my ad",
+            "send an ad",
+            "submit my ad",
+            "submit an advertisement",
+            "post my ad",
+            "post an advertisement",
+        )
+
+        if any(word in lowered for word in ad_request_words) and not is_ticket_channel(message.channel):
+            await message.reply(
+                "Please open a partnership ticket before submitting an advertisement.",
+                mention_author=False,
+            )
+            return
+
         workflow = PARTNER_TICKETS.get(ticket_id)
 
         if workflow and workflow["user_id"] != user_id:
