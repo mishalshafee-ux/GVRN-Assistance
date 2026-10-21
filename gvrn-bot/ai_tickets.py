@@ -79,6 +79,7 @@ class AITicketAssistant(commands.Cog):
         self.bot = bot
         api_key = os.getenv("GEMINI_API_KEY")
         self.client = genai.Client(api_key=api_key) if api_key else None
+        print(f"Gemini API key configured: {bool(api_key)}")
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -240,6 +241,10 @@ class AITicketAssistant(commands.Cog):
             return
 
         if not self.client:
+            await message.reply(
+                "The AI assistant is not configured yet. Please contact staff.",
+                mention_author=False,
+            )
             return
 
         if not any(word in lowered for word in TRIGGER_WORDS):
