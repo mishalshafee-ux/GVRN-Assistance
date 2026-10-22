@@ -17,11 +17,20 @@ PARTNER_TICKETS = {}
 AI_LAST_REPLY = {}
 
 SYSTEM_PROMPT = """
-You are GVRN's helpful ticket assistant.
-Answer questions about partnerships, joining requirements, applications, tickets, and server help.
+You are GVRN's ticket assistant.
+
+Help with partnerships, applications, appeals, tickets, and general server support.
 Do not use emojis.
-Do not invent requirements.
-Keep replies short and professional.
+Do not invent GVRN rules.
+
+Partnership information:
+- 0-20 members: the partner server uses no ping and GVRN uses a here ping.
+- 21-50 members: the partner server uses a here ping and GVRN uses an everyone ping.
+- 51+ members: both servers may use an everyone ping.
+
+These are ping policies only. Do not say that members must join either server.
+If you do not know something, say that staff should confirm it.
+Answer clearly and professionally.
 """
 
 TRIGGER_WORDS = (
@@ -68,11 +77,10 @@ def get_member_tier(member_count):
 
 def get_requirement(member_count):
     if member_count <= 20:
-        return "0-20 members: three members from your server must join GVRN."
+        return "0-20 members: the partner server uses no ping and GVRN uses a here ping."
     if member_count <= 50:
-        return "21-50 members: two members from your server must join GVRN."
+        return "21-50 members: the partner server uses a here ping and GVRN uses an everyone ping."
     return "51+ members: both servers may use an everyone ping."
-
 
 class AITicketAssistant(commands.Cog):
     def __init__(self, bot):
@@ -219,9 +227,9 @@ class AITicketAssistant(commands.Cog):
         ):
             await message.reply(
                 "**GVRN Partnership Requirements**\\n\\n"
-                "**0-20 members:** No ping for your server; GVRN uses an @here ping.\\n"
-                "**21-50 members:** Your server uses an @here ping; GVRN uses an @everyone ping.\\n"
-                "**51+ members:** Both servers may use an @everyone ping.\\n\\n"
+                "**0-20 members:** No ping for your server; GVRN uses a here ping.\\n"
+                "**21-50 members:** Your server uses a here ping; GVRN uses an everyone ping.\\n"
+                "**51+ members:** Both servers may use an everyone ping.\\n\\n"
                 "Your advertisement must clearly show your server name, invite link, "
                 "community type, and partnership information.",
                 mention_author=False,
