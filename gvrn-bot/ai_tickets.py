@@ -227,6 +227,12 @@ class AITicketAssistant(commands.Cog):
         if any(word in lowered for word in requirement_words) and not any(
             word in lowered for word in advertisement_words
         ):
+            if is_ticket_channel(message.channel):
+                PARTNER_TICKETS[ticket_id] = {
+                    "user_id": user_id,
+                    "stage": "member_count",
+                }
+
             await message.channel.send(
                 "**GVRN Partnership Requirements**\\n\\n"
                 "**0-20 members:** No ping for your server; GVRN uses a here ping.\\n"
