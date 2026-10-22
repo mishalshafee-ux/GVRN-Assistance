@@ -99,12 +99,11 @@ def local_ai_fallback(question):
 
     if "partnership ticket" in question:
         return (
-            "Yes, this is a partnership ticket. I can guide you through the "
-            "requirements, collect your member count, collect your advertisement, "
-            "and send it to the GVRN partners channel."
+            "Yes, this is a partnership ticket. I can guide you through "
+            "the partnership process."
         )
 
-    if any(word in question for word in ("requirement", "requirements", "criteria")):
+    if any(word in question for word in ("partner", "partnership", "requirement", "criteria")):
         return (
             "**GVRN Partnership Requirements**\\n\\n"
             "**0-20 members:** Your server uses no ping; GVRN uses a here ping.\\n"
@@ -116,12 +115,16 @@ def local_ai_fallback(question):
     if any(word in question for word in ("send my ad", "submit my ad", "advertisement")):
         return "Please open a partnership ticket to submit your advertisement."
 
-    if any(word in question for word in ("hi", "hello", "hey", "how are you")):
+    greeting_words = {"hi", "hello", "hey"}
+    if question in greeting_words:
         return "Hello."
+
+    if question in {"how are you", "how is life", "hows life", "how's life"}:
+        return "I am doing well, thank you."
 
     return (
         "I can help with GVRN partnerships, applications, appeals, "
-        "reports, and general server questions. Please ask your question clearly."
+        "reports, and general server questions."
     )
 
 class AITicketAssistant(commands.Cog):
