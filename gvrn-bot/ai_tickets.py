@@ -9,10 +9,11 @@ import discord
 from discord.ext import commands
 import aiohttp
 from ai_control import is_ai_enabled
+from ticket_ai_control import is_ticket_ai_enabled
 
 PARTNERSHIP_CHANNEL_ID = 1531721204245856326
 AI_MODEL = "gemini-3.8-flash"
-AI_COOLDOWN_SECONDS = 45
+AI_COOLDOWN_SECONDS = 3
 PARTNER_POSTS_FILE = Path(__file__).with_name("partner_posts.json")
 
 PARTNER_TICKETS = {}
@@ -110,7 +111,12 @@ class AITicketAssistant(commands.Cog):
             f"mentioned={mentioned}, content={message.content!r}"
         )
 
-        if not is_ticket_channel(message.channel) and not mentioned:
+        in_ticket = is_ticket_channel(message.channel)
+        ticket_ai_enabled = (
+            in_ticket and is_ticket_ai_enabled(message.channel.id)
+        )
+
+        if not in_ticket and not mentioned:
             return
 
         content = (message.content or "").strip()
@@ -287,7 +293,11 @@ class AITicketAssistant(commands.Cog):
             )
             return
 
-        if not mentioned and not any(word in lowered for word in TRIGGER_WORDS):
+        if (
+            not ticket_ai_enabled
+            and not mentioned
+            and not any(word in lowered for word in TRIGGER_WORDS)
+        ):
             return
 
         now = time.monotonic()
