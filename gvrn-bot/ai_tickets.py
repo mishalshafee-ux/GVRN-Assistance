@@ -7,7 +7,7 @@ from pathlib import Path
 
 import discord
 from discord.ext import commands
-from google import genai
+import aiohttp
 from ai_control import is_ai_enabled
 
 PARTNERSHIP_CHANNEL_ID = 1531721204245856326
@@ -88,7 +88,7 @@ class AITicketAssistant(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         api_key = os.getenv("GEMINI_API_KEY")
-        self.client = genai.Client(api_key=api_key) if api_key else None
+        self.api_key = api_key
         print(f"Gemini API key configured: {bool(api_key)}")
 
     @commands.Cog.listener()
@@ -281,7 +281,7 @@ class AITicketAssistant(commands.Cog):
         if not ai_enabled:
             return
 
-        if not self.client:
+        if not self.api_key:
             await message.channel.send(
                 "The AI assistant is not configured yet. Please contact staff.",
             )
@@ -303,16 +303,41 @@ class AITicketAssistant(commands.Cog):
         try:
             print("Gemini request started.")
 
-            response = await asyncio.wait_for(
-                self.client.aio.models.generate_content(
-                    model=AI_MODEL,
-                    contents=prompt,
-                ),
-                timeout=20,
+            url = (
+                f"https://generativelanguage.googleapis.com/v1beta/models/"
+                f"{AI_MODEL}:generateContent?key={self.api_key}"
+            )
+
+            payload = {
+                "contents": [
+                    {
+                        "parts": [
+                            {"text": prompt}
+                        ]
+                    }
+                ]
+            }
+
+            timeout = aiohttp.ClientTimeout(total=12)
+
+            async with aiohttp.ClientSession(timeout=timeout) as session:
+                async with session.post(url, json=payload) as response:
+                    data = await response.json(content_type=None)
+
+                    if response.status >= 400:
+                        raise RuntimeError(
+                            f"Gemini HTTP {response.status}: {data}"
+                        )
+
+            answer = (
+                data.get("candidates", [{}])[0]
+                .get("content", {})
+                .get("parts", [{}])[0]
+                .get("text", "")
+                .strip()
             )
 
             print("Gemini response received.")
-            answer = (response.text or "").strip()
 
             if answer:
                 await message.channel.send(answer[:1900])
