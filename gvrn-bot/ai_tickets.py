@@ -30,7 +30,7 @@ Partnership information:
 - 51+ members: both servers may use an everyone ping.
 
 These are ping policies only. Do not say that members must join either server.
-If you do not know something, say that staff should confirm it.
+If you are unsure, explain what information is missing and ask a helpful follow-up question.
 Answer clearly and professionally.
 """
 
