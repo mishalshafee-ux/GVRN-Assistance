@@ -94,7 +94,14 @@ class AITicketAssistant(commands.Cog):
         if message.author.bot or not message.guild:
             return
 
-        mentioned = self.bot.user is not None and self.bot.user in message.mentions
+        mentioned = False
+
+        if self.bot.user is not None:
+            mentioned = (
+                self.bot.user in message.mentions
+                or f"<@{self.bot.user.id}>" in message.content
+                or f"<@!{self.bot.user.id}>" in message.content
+            )
 
         if not is_ticket_channel(message.channel) and not mentioned:
             return
