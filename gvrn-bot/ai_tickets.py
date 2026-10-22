@@ -286,7 +286,7 @@ class AITicketAssistant(commands.Cog):
             )
             return
 
-        if not any(word in lowered for word in TRIGGER_WORDS):
+        if not mentioned and not any(word in lowered for word in TRIGGER_WORDS):
             return
 
         now = time.monotonic()
@@ -307,7 +307,7 @@ class AITicketAssistant(commands.Cog):
             answer = (response.text or "").strip()
 
             if answer:
-                await message.channel.send(answer[:1900], mention_author=False)
+                await message.channel.send(answer[:1900])
 
         except Exception as error:
             print(f"Gemini ticket assistant error: {error}")
