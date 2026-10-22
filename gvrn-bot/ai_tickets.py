@@ -117,10 +117,7 @@ def local_ai_fallback(question):
         return "Please open a partnership ticket to submit your advertisement."
 
     if any(word in question for word in ("hi", "hello", "hey", "how are you")):
-        return (
-            "Hello. I can help with partnerships, applications, appeals, "
-            "reports, and general server questions."
-        )
+        return "Hello."
 
     return (
         "I can help with GVRN partnerships, applications, appeals, "
