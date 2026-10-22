@@ -104,6 +104,11 @@ class AITicketAssistant(commands.Cog):
                 or f"<@!{self.bot.user.id}>" in message.content
             )
 
+        print(
+            f"AI event: channel={message.channel.id}, "
+            f"mentioned={mentioned}, content={message.content!r}"
+        )
+
         if not is_ticket_channel(message.channel) and not mentioned:
             return
 
@@ -269,7 +274,10 @@ class AITicketAssistant(commands.Cog):
             )
             return
 
-        if not is_ai_enabled(message.guild.id):
+        ai_enabled = is_ai_enabled(message.guild.id)
+        print(f"AI enabled for guild {message.guild.id}: {ai_enabled}")
+
+        if not ai_enabled:
             return
 
         if not self.client:
