@@ -314,7 +314,7 @@ class AITicketAssistant(commands.Cog):
         try:
             print("Gemini request started.")
 
-            url = "https://generativelanguage.googleapis.com/v1beta/interactions"
+            url = "https://generativelanguage.googleapis.com/v1/interactions"
 
             payload = {
                 "model": AI_MODEL,
