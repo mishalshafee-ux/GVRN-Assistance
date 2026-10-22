@@ -243,7 +243,21 @@ class AITicketAssistant(commands.Cog):
             )
             return
 
-        if any(word in lowered for word in advertisement_words):
+        has_partnership_word = any(
+            word in lowered
+            for word in ("partner", "partnership", "parnthership")
+        )
+
+        has_member_count = bool(re.search(r"\b\d[\d,]*\b", content))
+
+        if (
+            any(word in lowered for word in advertisement_words)
+            or (
+                has_partnership_word
+                and has_member_count
+                and not any(word in lowered for word in requirement_words)
+            )
+        ):
             PARTNER_TICKETS[ticket_id] = {
                 "user_id": user_id,
                 "stage": "member_count",
