@@ -1,3 +1,4 @@
+import asyncio
 import json
 import os
 import re
@@ -300,10 +301,17 @@ class AITicketAssistant(commands.Cog):
         prompt = f"{SYSTEM_PROMPT}\n\nTicket question:\n{content}"
 
         try:
-            response = await self.client.aio.models.generate_content(
-                model=AI_MODEL,
-                contents=prompt,
+            print("Gemini request started.")
+
+            response = await asyncio.wait_for(
+                self.client.aio.models.generate_content(
+                    model=AI_MODEL,
+                    contents=prompt,
+                ),
+                timeout=20,
             )
+
+            print("Gemini response received.")
             answer = (response.text or "").strip()
 
             if answer:
