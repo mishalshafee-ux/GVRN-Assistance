@@ -125,9 +125,8 @@ class AITicketAssistant(commands.Cog):
         )
 
         if any(word in lowered for word in ad_request_words) and not is_ticket_channel(message.channel):
-            await message.reply(
+            await message.channel.send(
                 "Please open a partnership ticket before submitting an advertisement.",
-                mention_author=False,
             )
             return
 
@@ -141,21 +140,19 @@ class AITicketAssistant(commands.Cog):
                 match = re.search(r"\b(\d[\d,]*)\b", content)
 
                 if not match:
-                    await message.reply(
+                    await message.channel.send(
                         "Please tell me how many members your server has.",
-                        mention_author=False,
-                    )
+                            )
                     return
 
                 member_count = int(match.group(1).replace(",", ""))
                 workflow["member_count"] = member_count
                 workflow["stage"] = "advertisement"
 
-                await message.reply(
+                await message.channel.send(
                     f"{get_requirement(member_count)}\n\n"
                     "Please send the partnership advertisement you want posted.",
-                    mention_author=False,
-                )
+                    )
                 return
 
             if workflow["stage"] == "advertisement":
@@ -170,10 +167,9 @@ class AITicketAssistant(commands.Cog):
                 destination = self.bot.get_channel(PARTNERSHIP_CHANNEL_ID)
 
                 if destination is None:
-                    await message.reply(
+                    await message.channel.send(
                         "I could not find the partnership channel. Please contact staff.",
-                        mention_author=False,
-                    )
+                            )
                     return
 
                 embed = discord.Embed(
@@ -206,10 +202,9 @@ class AITicketAssistant(commands.Cog):
                 save_partner_posts(posts)
                 PARTNER_TICKETS.pop(ticket_id, None)
 
-                await message.reply(
+                await message.channel.send(
                     "Your partnership advertisement has been sent to the GVRN partners channel.",
-                    mention_author=False,
-                )
+                    )
                 return
 
         requirement_words = (
@@ -232,14 +227,13 @@ class AITicketAssistant(commands.Cog):
         if any(word in lowered for word in requirement_words) and not any(
             word in lowered for word in advertisement_words
         ):
-            await message.reply(
+            await message.channel.send(
                 "**GVRN Partnership Requirements**\\n\\n"
                 "**0-20 members:** No ping for your server; GVRN uses a here ping.\\n"
                 "**21-50 members:** Your server uses a here ping; GVRN uses an everyone ping.\\n"
                 "**51+ members:** Both servers may use an everyone ping.\\n\\n"
                 "Your advertisement must clearly show your server name, invite link, "
                 "community type, and partnership information.",
-                mention_author=False,
             )
             return
 
@@ -263,16 +257,14 @@ class AITicketAssistant(commands.Cog):
                 "stage": "member_count",
             }
 
-            await message.reply(
+            await message.channel.send(
                 "How many members does your server currently have?",
-                mention_author=False,
             )
             return
 
         if not self.client:
-            await message.reply(
+            await message.channel.send(
                 "The AI assistant is not configured yet. Please contact staff.",
-                mention_author=False,
             )
             return
 
@@ -297,7 +289,7 @@ class AITicketAssistant(commands.Cog):
             answer = (response.text or "").strip()
 
             if answer:
-                await message.reply(answer[:1900], mention_author=False)
+                await message.channel.send(answer[:1900], mention_author=False)
 
         except Exception as error:
             print(f"Gemini ticket assistant error: {error}")
