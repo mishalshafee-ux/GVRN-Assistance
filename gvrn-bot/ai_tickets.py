@@ -17,7 +17,7 @@ AI_COOLDOWN_SECONDS = 3
 PARTNER_POSTS_FILE = Path(__file__).with_name("partner_posts.json")
 
 PARTNER_TICKETS = {}
-AI_LAST_REPLY = {}
+AI_LAST_REPLY = {}\nAI_PROCESSED_MESSAGES = set()
 AI_INTERACTION_IDS = {}
 
 SYSTEM_PROMPT = """
@@ -138,6 +138,17 @@ class AITicketAssistant(commands.Cog):
     async def on_message(self, message):
         if message.author.bot or not message.guild:
             return
+
+        if self.bot.user and message.author.id == self.bot.user.id:
+            return
+
+        if message.id in AI_PROCESSED_MESSAGES:
+            return
+
+        AI_PROCESSED_MESSAGES.add(message.id)
+
+        if len(AI_PROCESSED_MESSAGES) > 5000:
+            AI_PROCESSED_MESSAGES.clear()
 
         mentioned = False
 
