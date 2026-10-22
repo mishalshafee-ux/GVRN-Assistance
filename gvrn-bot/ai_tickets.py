@@ -12,7 +12,7 @@ from ai_control import is_ai_enabled
 from ticket_ai_control import is_ticket_ai_enabled
 
 PARTNERSHIP_CHANNEL_ID = 1531721204245856326
-AI_MODEL = "gemini-3.8-flash"
+AI_MODEL = "gemini-3.6-flash"
 AI_COOLDOWN_SECONDS = 3
 PARTNER_POSTS_FILE = Path(__file__).with_name("partner_posts.json")
 
