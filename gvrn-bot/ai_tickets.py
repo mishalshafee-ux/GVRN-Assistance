@@ -357,7 +357,10 @@ class AITicketAssistant(commands.Cog):
                 await message.channel.send(answer[:1900])
 
         except Exception as error:
-            print(f"Gemini ticket assistant error: {error}")
+            print(
+                "Gemini ticket assistant error: "
+                f"{type(error).__name__}: {error!r}"
+            )
 
 
 async def setup(bot):
