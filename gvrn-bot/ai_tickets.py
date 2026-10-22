@@ -88,26 +88,43 @@ def get_requirement(member_count):
 
 
 def local_ai_fallback(question):
-    question = question.lower()
+    question = question.lower().strip()
+
+    if any(word in question for word in ("what questions", "what can you answer", "help with")):
+        return (
+            "I can help with GVRN partnerships, partnership requirements, "
+            "advertisement submissions, applications, appeals, reports, "
+            "ticket questions, and general server support."
+        )
+
+    if "partnership ticket" in question:
+        return (
+            "Yes, this is a partnership ticket. I can guide you through the "
+            "requirements, collect your member count, collect your advertisement, "
+            "and send it to the GVRN partners channel."
+        )
+
+    if any(word in question for word in ("requirement", "requirements", "criteria")):
+        return (
+            "**GVRN Partnership Requirements**\\n\\n"
+            "**0-20 members:** Your server uses no ping; GVRN uses a here ping.\\n"
+            "**21-50 members:** Your server uses a here ping; GVRN uses an everyone ping.\\n"
+            "**51+ members:** Both servers may use an everyone ping.\\n\\n"
+            "To submit an advertisement, open a partnership ticket."
+        )
+
+    if any(word in question for word in ("send my ad", "submit my ad", "advertisement")):
+        return "Please open a partnership ticket to submit your advertisement."
 
     if any(word in question for word in ("hi", "hello", "hey", "how are you")):
         return (
-            "Hello. I am here to help with GVRN partnerships, applications, "
-            "appeals, and general server questions."
-        )
-
-    if any(word in question for word in ("partner", "partnership", "requirement")):
-        return (
-            "**GVRN Partnership Requirements**\n\n"
-            "**0-20 members:** Your server uses no ping; GVRN uses a here ping.\n"
-            "**21-50 members:** Your server uses a here ping; GVRN uses an everyone ping.\n"
-            "**51+ members:** Both servers may use an everyone ping.\n\n"
-            "To submit an advertisement, open a partnership ticket."
+            "Hello. I can help with partnerships, applications, appeals, "
+            "reports, and general server questions."
         )
 
     return (
         "I can help with GVRN partnerships, applications, appeals, "
-        "and general server questions. Please ask your question clearly."
+        "reports, and general server questions. Please ask your question clearly."
     )
 
 class AITicketAssistant(commands.Cog):
