@@ -18,6 +18,7 @@ PARTNER_POSTS_FILE = Path(__file__).with_name("partner_posts.json")
 
 PARTNER_TICKETS = {}
 AI_LAST_REPLY = {}
+AI_INTERACTION_IDS = {}
 
 SYSTEM_PROMPT = """
 You are GVRN's ticket assistant.
@@ -313,25 +314,29 @@ class AITicketAssistant(commands.Cog):
         try:
             print("Gemini request started.")
 
-            url = (
-                f"https://generativelanguage.googleapis.com/v1beta/models/"
-                f"{AI_MODEL}:generateContent?key={self.api_key}"
-            )
+            url = "https://generativelanguage.googleapis.com/v1beta/interactions"
 
             payload = {
-                "contents": [
-                    {
-                        "parts": [
-                            {"text": prompt}
-                        ]
-                    }
-                ]
+                "model": AI_MODEL,
+                "input": prompt,
             }
 
-            timeout = aiohttp.ClientTimeout(total=12)
+            previous_id = AI_INTERACTION_IDS.get(ticket_id)
+
+            if previous_id:
+                payload["previous_interaction_id"] = previous_id
+
+            timeout = aiohttp.ClientTimeout(total=15)
 
             async with aiohttp.ClientSession(timeout=timeout) as session:
-                async with session.post(url, json=payload) as response:
+                async with session.post(
+                    url,
+                    json=payload,
+                    headers={
+                        "x-goog-api-key": self.api_key,
+                        "Content-Type": "application/json",
+                    },
+                ) as response:
                     data = await response.json(content_type=None)
 
                     if response.status >= 400:
@@ -339,13 +344,12 @@ class AITicketAssistant(commands.Cog):
                             f"Gemini HTTP {response.status}: {data}"
                         )
 
-            answer = (
-                data.get("candidates", [{}])[0]
-                .get("content", {})
-                .get("parts", [{}])[0]
-                .get("text", "")
-                .strip()
-            )
+            interaction_id = data.get("id")
+
+            if interaction_id:
+                AI_INTERACTION_IDS[ticket_id] = interaction_id
+
+            answer = data.get("output_text", "").strip()
 
             print("Gemini response received.")
 
