@@ -86,6 +86,30 @@ def get_requirement(member_count):
         return "21-50 members: the partner server uses a here ping and GVRN uses an everyone ping."
     return "51+ members: both servers may use an everyone ping."
 
+
+def local_ai_fallback(question):
+    question = question.lower()
+
+    if any(word in question for word in ("hi", "hello", "hey", "how are you")):
+        return (
+            "Hello. I am here to help with GVRN partnerships, applications, "
+            "appeals, and general server questions."
+        )
+
+    if any(word in question for word in ("partner", "partnership", "requirement")):
+        return (
+            "**GVRN Partnership Requirements**\n\n"
+            "**0-20 members:** Your server uses no ping; GVRN uses a here ping.\n"
+            "**21-50 members:** Your server uses a here ping; GVRN uses an everyone ping.\n"
+            "**51+ members:** Both servers may use an everyone ping.\n\n"
+            "To submit an advertisement, open a partnership ticket."
+        )
+
+    return (
+        "I can help with GVRN partnerships, applications, appeals, "
+        "and general server questions. Please ask your question clearly."
+    )
+
 class AITicketAssistant(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -361,6 +385,7 @@ class AITicketAssistant(commands.Cog):
                 "Gemini ticket assistant error: "
                 f"{type(error).__name__}: {error!r}"
             )
+            await message.channel.send(local_ai_fallback(content))
 
 
 async def setup(bot):
