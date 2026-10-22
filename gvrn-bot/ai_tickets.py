@@ -402,7 +402,9 @@ class AITicketAssistant(commands.Cog):
                 "Gemini ticket assistant error: "
                 f"{type(error).__name__}: {error!r}"
             )
-            await message.channel.send(local_ai_fallback(content))
+            await message.channel.send(
+                "Gemini is temporarily unavailable. Please try again in a moment."
+            )
 
 
 async def setup(bot):
