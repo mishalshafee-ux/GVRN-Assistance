@@ -7,6 +7,7 @@ from pathlib import Path
 import discord
 from discord.ext import commands
 from google import genai
+from ai_control import is_ai_enabled
 
 PARTNERSHIP_CHANNEL_ID = 1531721204245856326
 AI_MODEL = "gemini-3.8-flash"
@@ -266,6 +267,9 @@ class AITicketAssistant(commands.Cog):
             await message.channel.send(
                 "How many members does your server currently have?",
             )
+            return
+
+        if not is_ai_enabled(message.guild.id):
             return
 
         if not self.client:

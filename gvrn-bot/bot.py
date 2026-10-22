@@ -34,6 +34,7 @@ EXTENSIONS = [
     "command_list",
     "partnership_requirements",
     "ai_tickets",
+    "ai_control",
     "status_roles",
     "verification",
     "advertisements",
