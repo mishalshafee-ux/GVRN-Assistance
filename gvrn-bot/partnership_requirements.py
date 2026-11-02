@@ -32,12 +32,10 @@ def is_ticket_channel(channel: discord.abc.GuildChannel):
 
 def requirements_text():
     return (
-        "**Partnership Requirements**\n\n"
-        "**0-20 Members:** You get no ping, we get here ping. "
-        "Three members from your server must join ours.\n\n"
-        "**21-50 Members:** You get here ping, we get everyone ping. "
-        "Two members from your server must join ours.\n\n"
-        "**51+ Members:** You get everyone ping, we get everyone ping."
+        "**GVRN Partnership Requirements**\\n\\n"
+        "**0-20 members:** Your server uses no ping; GVRN uses a here ping.\\n"
+        "**21-50 members:** Your server uses a here ping; GVRN uses an everyone ping.\\n"
+        "**51+ members:** Both servers may use an everyone ping."
     )
 
 

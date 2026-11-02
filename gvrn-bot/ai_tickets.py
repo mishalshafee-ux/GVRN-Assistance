@@ -106,10 +106,10 @@ def local_ai_fallback(question):
 
     if any(word in question for word in ("partner", "partnership", "requirement", "criteria")):
         return (
-            "**GVRN Partnership Requirements**\\n\\n"
-            "**0-20 members:** Your server uses no ping; GVRN uses a here ping.\\n"
-            "**21-50 members:** Your server uses a here ping; GVRN uses an everyone ping.\\n"
-            "**51+ members:** Both servers may use an everyone ping.\\n\\n"
+            "**GVRN Partnership Requirements**\n\n"
+            "**0-20 members:** Your server uses no ping; GVRN uses a here ping.\n"
+            "**21-50 members:** Your server uses a here ping; GVRN uses an everyone ping.\n"
+            "**51+ members:** Both servers may use an everyone ping.\n\n"
             "To submit an advertisement, open a partnership ticket."
         )
 
@@ -301,10 +301,10 @@ class AITicketAssistant(commands.Cog):
                 }
 
             await message.channel.send(
-                "**GVRN Partnership Requirements**\\n\\n"
-                "**0-20 members:** No ping for your server; GVRN uses a here ping.\\n"
-                "**21-50 members:** Your server uses a here ping; GVRN uses an everyone ping.\\n"
-                "**51+ members:** Both servers may use an everyone ping.\\n\\n"
+                "**GVRN Partnership Requirements**\n\n"
+                "**0-20 members:** No ping for your server; GVRN uses a here ping.\n"
+                "**21-50 members:** Your server uses a here ping; GVRN uses an everyone ping.\n"
+                "**51+ members:** Both servers may use an everyone ping.\n\n"
                 "Your advertisement must clearly show your server name, invite link, "
                 "community type, and partnership information.",
             )
