@@ -399,14 +399,32 @@ class AITicketAssistant(commands.Cog):
                             f"OpenRouter HTTP {response.status}: {data}"
                         )
 
-            answer = (
-                data.get("choices", [{}])[0]
-                .get("message", {})
-                .get("content", "")
-                .strip()
+            message_data = data.get("choices", [{}])[0].get("message", {})
+            answer = message_data.get("content", "")
+
+            if isinstance(answer, list):
+                answer = "".join(
+                    part.get("text", "")
+                    for part in answer
+                    if isinstance(part, dict)
+                )
+
+            if not answer:
+                answer = message_data.get("reasoning", "")
+
+            answer = str(answer).strip()
+
+            print(
+                "OpenRouter response received. "
+                f"Characters: {len(answer)}"
             )
 
-            print("OpenRouter response received.")
+            if not answer:
+                print(f"OpenRouter returned no text. Keys: {list(data.keys())}")
+                await message.channel.send(
+                    "I received an empty AI response. Please try again."
+                )
+                return
 
 
         except Exception as error:
