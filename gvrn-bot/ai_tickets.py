@@ -4,12 +4,16 @@ import os
 import re
 import time
 from pathlib import Path
+from dotenv import load_dotenv
 
 import discord
 from discord.ext import commands
 import aiohttp
 from ai_control import is_ai_enabled
 from ticket_ai_control import is_ticket_ai_enabled
+
+load_dotenv(Path(__file__).resolve().parent.parent / '.env')
+load_dotenv()
 
 PARTNERSHIP_CHANNEL_ID = 1531721204245856326
 OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "openrouter/free")
