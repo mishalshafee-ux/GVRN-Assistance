@@ -12,7 +12,7 @@ from ai_control import is_ai_enabled
 from ticket_ai_control import is_ticket_ai_enabled
 
 PARTNERSHIP_CHANNEL_ID = 1531721204245856326
-OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "openrouter/free")
 AI_COOLDOWN_SECONDS = 3
 PARTNER_POSTS_FILE = Path(__file__).with_name("partner_posts.json")
 
@@ -131,7 +131,7 @@ def local_ai_fallback(question):
 class AITicketAssistant(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        api_key = os.getenv("OPENAI_API_KEY")
+        api_key = os.getenv("OPENROUTER_API_KEY")
         self.api_key = api_key
         print(f"OpenAI API key configured: {bool(api_key)}")
 
@@ -365,27 +365,26 @@ class AITicketAssistant(commands.Cog):
         prompt = f"{SYSTEM_PROMPT}\n\nTicket question:\n{content}"
 
         try:
-            print("OpenAI request started.")
+            print("OpenRouter request started.")
 
             payload = {
-                "model": OPENAI_MODEL,
-                "instructions": SYSTEM_PROMPT,
-                "input": content,
-                "max_output_tokens": 500,
+                "model": OPENROUTER_MODEL,
+                "messages": [
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "user", "content": content},
+                ],
             }
-
-            previous_response_id = AI_INTERACTION_IDS.get(ticket_id)
-            if previous_response_id:
-                payload["previous_response_id"] = previous_response_id
 
             timeout = aiohttp.ClientTimeout(total=30)
 
             async with aiohttp.ClientSession(timeout=timeout) as session:
                 async with session.post(
-                    "https://api.openai.com/v1/responses",
+                    "https://openrouter.ai/api/v1/chat/completions",
                     headers={
                         "Authorization": f"Bearer {self.api_key}",
                         "Content-Type": "application/json",
+                        "HTTP-Referer": "https://gvrn.wispbyte.app",
+                        "X-Title": "GVRN Discord Assistant",
                     },
                     json=payload,
                 ) as response:
@@ -393,29 +392,22 @@ class AITicketAssistant(commands.Cog):
 
                     if response.status >= 400:
                         raise RuntimeError(
-                            f"OpenAI HTTP {response.status}: {data}"
+                            f"OpenRouter HTTP {response.status}: {data}"
                         )
 
-            response_id = data.get("id")
-            if response_id:
-                AI_INTERACTION_IDS[ticket_id] = response_id
+            answer = (
+                data.get("choices", [{}])[0]
+                .get("message", {})
+                .get("content", "")
+                .strip()
+            )
 
-            answer = (data.get("output_text") or "").strip()
-
-            if not answer:
-                parts = []
-                for item in data.get("output", []):
-                    for item_content in item.get("content", []):
-                        if item_content.get("type") == "output_text":
-                            parts.append(item_content.get("text", ""))
-                answer = "".join(parts).strip()
-
-            print("OpenAI response received.")
+            print("OpenRouter response received.")
 
 
         except Exception as error:
             print(
-                "OpenAI ticket assistant error: "
+                "OpenRouter ticket assistant error: "
                 f"{type(error).__name__}: {error!r}"
             )
             await message.channel.send(
