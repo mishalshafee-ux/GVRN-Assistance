@@ -133,7 +133,7 @@ class AITicketAssistant(commands.Cog):
         self.bot = bot
         api_key = os.getenv("OPENROUTER_API_KEY")
         self.api_key = api_key
-        print(f"OpenAI API key configured: {bool(api_key)}")
+        print(f"OpenRouter API key configured: {bool(api_key)}")
 
     @commands.Cog.listener()
     async def on_message(self, message):
