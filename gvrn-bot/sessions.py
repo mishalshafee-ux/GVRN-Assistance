@@ -20,11 +20,18 @@ SESSION_VOTES = {}
 
 
 def can_use_session_command(member: discord.Member):
-    if member.guild_permissions.manage_guild:
-        return True
+    if not isinstance(member, discord.Member):
+        return False
 
-    return any(role.id == STAFF_COMMAND_ROLE_ID for role in member.roles)
+    allowed_role_ids = {
+        STAFF_COMMAND_ROLE_ID,
+        int(os.getenv("HIGH_COMMAND_ROLE_ID", "0") or 0),
+        int(os.getenv("GENERAL_STAFF_ROLE_ID", "0") or 0),
+        int(os.getenv("MARKETPLACE_STAFF_ROLE_ID", "0") or 0),
+        int(os.getenv("REPORT_STAFF_ROLE_ID", "0") or 0),
+    }
 
+    return any(role.id in allowed_role_ids for role in member.roles)
 
 def role_mention(role_id):
     return f"<@&{role_id}>" if role_id else ""
