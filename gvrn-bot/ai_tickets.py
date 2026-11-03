@@ -193,6 +193,52 @@ class AITicketAssistant(commands.Cog):
         ticket_id = message.channel.id
         user_id = message.author.id
 
+        partnership_match = re.search(
+            r"\\b(partner|partnership)\\b",
+            lowered,
+        )
+        requirement_request = any(
+            word in lowered
+            for word in (
+                "requirement",
+                "requirements",
+                "criteria",
+                "what do i need",
+                "how do i partner",
+            )
+        )
+
+        if (
+            is_ticket_channel(message.channel)
+            and partnership_match
+            and not requirement_request
+            and ticket_id not in PARTNER_TICKETS
+            and str(ticket_id) not in load_partner_posts()
+        ):
+            member_match = re.search(r"\\b(\\d[\\d,]*)\\s*(members?|membercount)\\b", lowered)
+
+            if member_match:
+                member_count = int(member_match.group(1).replace(",", ""))
+                PARTNER_TICKETS[ticket_id] = {
+                    "user_id": user_id,
+                    "stage": "advertisement",
+                    "member_count": member_count,
+                }
+                await message.channel.send(
+                    f"Thanks. Your server has {member_count:,} members. "
+                    "Please send the partnership advertisement in this ticket."
+                )
+            else:
+                PARTNER_TICKETS[ticket_id] = {
+                    "user_id": user_id,
+                    "stage": "member_count",
+                }
+                await message.channel.send(
+                    "How many members does your server currently have?"
+                )
+
+            return
+
         ad_request_words = (
             "send my ad",
             "send an ad",
