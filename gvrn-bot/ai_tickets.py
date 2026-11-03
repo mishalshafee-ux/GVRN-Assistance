@@ -23,7 +23,7 @@ PARTNER_POSTS_FILE = Path(__file__).with_name("partner_posts.json")
 PARTNER_TICKETS = {}
 AI_LAST_REPLY = {}
 AI_PROCESSED_MESSAGES = set()
-AI_INTERACTION_IDS = {}
+AI_INTERACTION_IDS = {}\nAI_HISTORY = {}
 
 SYSTEM_PROMPT = """
 You are GVRN's ticket assistant.
@@ -351,11 +351,7 @@ class AITicketAssistant(commands.Cog):
             )
             return
 
-        if (
-            not ticket_ai_enabled
-            and not mentioned
-            and not any(word in lowered for word in TRIGGER_WORDS)
-        ):
+        if not mentioned and not ticket_ai_enabled:
             return
 
         now = time.monotonic()
@@ -375,6 +371,7 @@ class AITicketAssistant(commands.Cog):
                 "model": OPENROUTER_MODEL,
                 "messages": [
                     {"role": "system", "content": SYSTEM_PROMPT},
+                    *AI_HISTORY.get(ticket_id, [])[-10:],
                     {"role": "user", "content": content},
                 ],
             }
@@ -426,6 +423,15 @@ class AITicketAssistant(commands.Cog):
                 )
                 return
 
+            AI_HISTORY.setdefault(ticket_id, []).append(
+                {"role": "user", "content": content}
+            )
+            AI_HISTORY[ticket_id].append(
+                {"role": "assistant", "content": answer}
+            )
+            AI_HISTORY[ticket_id] = AI_HISTORY[ticket_id][-10:]
+
+            await message.channel.send(answer[:1900])
 
         except Exception as error:
             print(
@@ -433,7 +439,7 @@ class AITicketAssistant(commands.Cog):
                 f"{type(error).__name__}: {error!r}"
             )
             await message.channel.send(
-                "OpenAI is temporarily unavailable. Please try again in a moment."
+                "OpenRouter is temporarily unavailable. Please try again in a moment."
             )
 
 
