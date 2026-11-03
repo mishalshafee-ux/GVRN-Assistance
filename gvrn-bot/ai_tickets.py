@@ -23,7 +23,8 @@ PARTNER_POSTS_FILE = Path(__file__).with_name("partner_posts.json")
 PARTNER_TICKETS = {}
 AI_LAST_REPLY = {}
 AI_PROCESSED_MESSAGES = set()
-AI_INTERACTION_IDS = {}\nAI_HISTORY = {}
+AI_INTERACTION_IDS = {}
+AI_HISTORY = {}
 
 SYSTEM_PROMPT = """
 You are GVRN's ticket assistant.
