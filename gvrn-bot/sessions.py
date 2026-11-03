@@ -23,6 +23,9 @@ def can_use_session_command(member: discord.Member):
     if not isinstance(member, discord.Member):
         return False
 
+    if member.guild_permissions.administrator:
+        return True
+
     allowed_role_ids = {
         STAFF_COMMAND_ROLE_ID,
         int(os.getenv("HIGH_COMMAND_ROLE_ID", "0") or 0),
