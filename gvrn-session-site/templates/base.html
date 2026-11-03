@@ -492,6 +492,128 @@ pre {
     filter: drop-shadow(0 0 30px rgba(245, 147, 95, 0.45));
 }
 
+
+/* GVRN GRAY THEME */
+
+:root {
+    --bg: #25282d;
+    --panel: #30343a;
+    --panel-soft: #383d44;
+    --border: #4b525b;
+    --text: #f3f4f6;
+    --muted: #c4c8ce;
+    --muted-2: #9299a3;
+    --accent: #f28b52;
+    --accent-2: #b98cff;
+    --accent-3: #43b581;
+    --danger: #ed4245;
+    --glow: rgba(242, 139, 82, 0.18);
+}
+
+body {
+    background: #25282d;
+    color: var(--text);
+    animation: none;
+}
+
+body::before {
+    display: none;
+}
+
+header {
+    background: #202328;
+    border-bottom: 1px solid #454b54;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.22);
+    backdrop-filter: none;
+}
+
+header::after {
+    content: none;
+}
+
+.card {
+    background: #30343a;
+    border: 1px solid #484f58;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.card:hover {
+    border-color: #69727d;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.25);
+}
+
+p {
+    color: #c9cdd2;
+}
+
+label,
+.portal-label,
+.brand-kicker {
+    color: #f2a06f;
+}
+
+input,
+textarea,
+select {
+    background: #24272c;
+    border-color: #515963;
+    color: #f3f4f6;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(242, 139, 82, 0.16);
+}
+
+button,
+.btn {
+    background: #e87945;
+    color: #ffffff;
+    border-radius: 8px;
+    box-shadow: none;
+}
+
+button:hover,
+.btn:hover {
+    background: #f28b52;
+    box-shadow: 0 5px 14px rgba(242, 139, 82, 0.2);
+}
+
+.btn-secondary {
+    background: #454b53;
+    border-color: #5a626d;
+    color: #f3f4f6;
+}
+
+.flash {
+    background: #492f32;
+    border-color: #a95358;
+    color: #ffd7d9;
+}
+
+pre {
+    background: #202328;
+    border-color: #484f58;
+}
+
+.brand-mark {
+    background: #30343a;
+    border: 2px solid #e87945;
+    box-shadow: 0 0 35px rgba(242, 139, 82, 0.16);
+    animation: none;
+}
+
+.brand-title {
+    color: #f3f4f6;
+}
+
+small {
+    color: #9da4ad;
+}
+
 </style>
 </head>
 <body>
