@@ -13,6 +13,7 @@ COLOR = 0xF5935F
 SESSION_PING_ROLE_ID = int(os.getenv("SESSION_PING_ROLE_ID", "0") or 0)
 STAFF_COMMAND_ROLE_ID = 1531256052593459240
 SESSION_STAFF_CHANNEL_ID = int(os.getenv("SESSION_STAFF_CHANNEL_ID", "0") or 0)
+SESSION_COMMAND_CHANNEL_ID = 1531296939700654170
 SESSION_IMAGE_URL = os.getenv("SESSION_IMAGE_URL", "")
 SESSION_REACTION_EMOJI = os.getenv("SESSION_REACTION_EMOJI", "✅")
 
@@ -50,6 +51,13 @@ class Session(commands.Cog):
     @app_commands.describe(required_reactions="Required reactions before setup notice")
     async def startup(self, interaction: discord.Interaction, required_reactions: int = 10):
         await interaction.response.defer(ephemeral=True)
+
+        if interaction.channel_id != SESSION_COMMAND_CHANNEL_ID:
+            await interaction.followup.send(
+                "Use this command in the designated startup channel.",
+                ephemeral=True,
+            )
+            return
 
         if not can_use_session_command(interaction.user):
             await interaction.followup.send("You do not have permission to use this command.", ephemeral=True)
