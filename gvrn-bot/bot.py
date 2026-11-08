@@ -1,5 +1,6 @@
 import asyncio
 import os
+import traceback
 
 import discord
 from discord.ext import commands
@@ -52,6 +53,27 @@ EXTENSIONS = [
     "extra_commands",
 ]
 
+
+
+@bot.tree.error
+async def on_app_command_error(
+    interaction: discord.Interaction,
+    error: discord.app_commands.AppCommandError,
+):
+    original = getattr(error, "original", error)
+
+    print("[SLASH COMMAND ERROR]")
+    traceback.print_exception(type(original), original, original.__traceback__)
+
+    message = f"Command error: {type(original).__name__}: {original}"
+
+    try:
+        if interaction.response.is_done():
+            await interaction.followup.send(message[:1900], ephemeral=True)
+        else:
+            await interaction.response.send_message(message[:1900], ephemeral=True)
+    except Exception as response_error:
+        print(f"Could not send error response: {response_error}")
 
 async def update_presence():
     guild = bot.get_guild(GUILD_ID) if GUILD_ID else None
