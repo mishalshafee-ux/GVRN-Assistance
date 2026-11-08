@@ -50,6 +50,7 @@ EXTENSIONS = [
     "moderation_tools",
     "cohost",
     "check_perms",
+    "roblox_verification",
     "extra_commands",
 ]
 
