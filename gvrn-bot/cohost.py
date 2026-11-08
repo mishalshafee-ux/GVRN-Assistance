@@ -5,7 +5,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-COLOR = 0xF5935F
+COLOR = 0x7EC8E3
 DATA_FILE = Path("cohost_data.json")
 
 

@@ -21,7 +21,7 @@ def is_staff(member: discord.Member) -> bool:
     return any(role.id == STAFF_COMMAND_ROLE_ID for role in member.roles)
 
 SERVER_NAME = "Greenville Community Roleplay"
-REGEN_COLOR = 0xF5935F
+REGEN_COLOR = 0x7EC8E3
 REGEN_TITLE = "Link Regeneration"
 
 REGEN_DESCRIPTION = (

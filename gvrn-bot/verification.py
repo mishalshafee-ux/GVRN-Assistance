@@ -7,7 +7,7 @@ import aiohttp
 import discord
 from discord.ext import commands
 
-COLOR = 0xF5935F
+COLOR = 0x7EC8E3
 
 VERIFY_ROLE_ID = int(os.getenv("VERIFY_ROLE_ID", "0") or 0)
 UNVERIFIED_ROLE_ID = int(os.getenv("UNVERIFIED_ROLE_ID", "0") or 0)

@@ -8,7 +8,7 @@ from discord.ext import commands
 from session_cleanup import clear_session_embeds
 from session_state import save_session_start
 
-COLOR = 0xF5935F
+COLOR = 0x7EC8E3
 
 SESSION_PING_ROLE_ID = int(os.getenv("SESSION_PING_ROLE_ID", "0") or 0)
 STAFF_COMMAND_ROLE_ID = 1531256052593459240

@@ -14,7 +14,7 @@ HIGH_COMMAND_ROLE_ID = int(os.getenv("HIGH_COMMAND_ROLE_ID", "0"))
 
 APPLICATION_DATA_FILE = Path("application_status.json")
 
-PANEL_COLOR = 0xF5935F
+PANEL_COLOR = 0x7EC8E3
 OPEN_MARK = os.getenv("APP_OPEN_EMOJI", "✅")
 CLOSED_MARK = os.getenv("APP_CLOSED_EMOJI", "❌")
 

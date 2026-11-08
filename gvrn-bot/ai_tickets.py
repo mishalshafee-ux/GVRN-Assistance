@@ -308,7 +308,7 @@ class AITicketAssistant(commands.Cog):
                 embed = discord.Embed(
                     title="GVRN Partnership Advertisement",
                     description=content[:4000],
-                    color=0xF5935F,
+                    color=0x7EC8E3,
                 )
                 embed.add_field(
                     name="Server Representative",

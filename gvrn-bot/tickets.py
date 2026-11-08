@@ -6,7 +6,7 @@ import aiohttp
 import discord
 from discord.ext import commands
 
-COLOR = 0xF5935F
+COLOR = 0x7EC8E3
 
 MAX_OPEN_TICKETS_PER_USER = int(os.getenv("MAX_OPEN_TICKETS_PER_USER", "1"))
 TICKET_TRANSCRIPT_LOG_CHANNEL_ID = int(os.getenv("TICKET_TRANSCRIPT_LOG_CHANNEL_ID", "0"))
@@ -559,7 +559,7 @@ async def send_partner_notice_once(message):
             f"{PARTNER_DOT} Please provide your server name, invite link, community type, and why you want to partner with GVRN.\n"
             f"{PARTNER_DOT} Our team will review your request and respond in this ticket."
         ),
-        color=0xF5935F,
+        color=0x7EC8E3,
     )
     embed.set_footer(text="GVRN Partnership Team")
 

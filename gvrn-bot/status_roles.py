@@ -53,7 +53,7 @@ class StatusRoles(commands.Cog):
                         f"By using GVRN in your custom status, you earned the "
                         f"**{role.name}** role."
                     ),
-                    color=0xF5935F,
+                    color=0x7EC8E3,
                 )
                 embed.set_footer(text="Greenville Roleplay Network")
 
