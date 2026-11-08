@@ -39,7 +39,6 @@ EXTENSIONS = [
     "ai_control",
     "ticket_ai_control",
     "status_roles",
-    "verification",
     "advertisements",
     "applications",
     "session_info",
