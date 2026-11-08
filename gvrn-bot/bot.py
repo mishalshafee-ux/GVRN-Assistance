@@ -80,7 +80,19 @@ async def on_app_command_error(
 
 async def update_presence():
     guild = bot.get_guild(GUILD_ID) if GUILD_ID else None
+
+    if guild is None and GUILD_ID:
+        try:
+            guild = await bot.fetch_guild(GUILD_ID)
+        except discord.HTTPException as error:
+            print(f"Could not fetch configured guild {GUILD_ID}: {error}")
+
     member_count = guild.member_count if guild and guild.member_count else 0
+
+    print(f"Configured GUILD_ID: {GUILD_ID}")
+    print(f"Connected guilds: {[(item.name, item.id) for item in bot.guilds]}")
+    print(f"Target guild found: {guild is not None}")
+    print(f"Member count: {member_count}")
 
     await bot.change_presence(
         status=discord.Status.dnd,
