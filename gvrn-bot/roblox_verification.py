@@ -12,7 +12,8 @@ UNVERIFIED_ROLE_ID = int(os.getenv("UNVERIFIED_ROLE_ID", "0") or 0)
 BLOXLINK_API_KEY = os.getenv("BLOXLINK_API_KEY", "")
 
 BLOXLINK_URL = (
-    "https://api.blox.link/v4/public/discord-to-roblox/{discord_id}"
+    "https://api.blox.link/v4/public/guilds/"
+    "{guild_id}/discord-to-roblox/{discord_id}"
 )
 ROBLOX_URL = "https://users.roblox.com/v1/users/{roblox_id}"
 
@@ -32,7 +33,7 @@ def extract_roblox_id(data):
     return None
 
 
-async def get_roblox_user(discord_id):
+async def get_roblox_user(guild_id, discord_id):
     headers = {}
 
     if BLOXLINK_API_KEY:
@@ -42,7 +43,7 @@ async def get_roblox_user(discord_id):
 
     async with aiohttp.ClientSession(timeout=timeout) as session:
         async with session.get(
-            BLOXLINK_URL.format(discord_id=discord_id),
+            BLOXLINK_URL.format(guild_id=guild_id, discord_id=discord_id),
             headers=headers,
         ) as response:
             if response.status == 404:
@@ -112,7 +113,7 @@ class VerificationView(discord.ui.View):
             return
 
         try:
-            roblox_user = await get_roblox_user(member.id)
+            roblox_user = await get_roblox_user(interaction.guild.id, member.id)
         except Exception as error:
             print(f"Roblox verification error: {error}")
             await interaction.followup.send(
