@@ -49,6 +49,7 @@ EXTENSIONS = [
     "moderation_tools",
     "cohost",
     "check_perms",
+    "extra_commands",
 ]
 
 
