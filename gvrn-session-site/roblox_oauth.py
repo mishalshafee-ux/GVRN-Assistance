@@ -5,14 +5,19 @@ from pathlib import Path
 from urllib.parse import urlencode
 
 import requests
+from dotenv import load_dotenv
 from flask import Blueprint, redirect, request
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 
 
 roblox_oauth = Blueprint("roblox_oauth", __name__)
 
-CLIENT_ID = os.getenv("ROBLOX_CLIENT_ID", "")
-CLIENT_SECRET = os.getenv("ROBLOX_CLIENT_SECRET", "")
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
+load_dotenv()
+print(f"Roblox OAuth client configured: {bool(os.getenv("ROBLOX_CLIENT_ID"))}")
+
+CLIENT_ID = os.getenv("ROBLOX_CLIENT_ID", "").strip()
+CLIENT_SECRET = os.getenv("ROBLOX_CLIENT_SECRET", "").strip()
 REDIRECT_URI = os.getenv(
     "ROBLOX_REDIRECT_URI",
     "https://gvrn.wispbyte.app/roblox/callback",
