@@ -17,7 +17,7 @@ PENDING_VERIFICATIONS = {}
 
 def make_code():
     letters = "".join(random.choices(string.ascii_uppercase + string.digits, k=6))
-    return f"GVRN-{letters}"
+    return f"OGVRN-{letters}"
 
 
 def normalize_text(text):
@@ -44,7 +44,7 @@ async def get_roblox_user(username):
 
 async def get_roblox_bio(user_id):
     headers = {
-        "User-Agent": "GVRN-Discord-Bot/1.0",
+        "User-Agent": "OGVRN-Discord-Bot/1.0",
         "Accept": "application/json,text/html",
     }
 
@@ -222,9 +222,9 @@ class Verification(commands.Cog):
     @commands.has_permissions(manage_roles=True)
     async def verify_panel(self, ctx):
         embed = discord.Embed(
-            title="✅ GVRN Verification",
+            title="✅ OGVRN Verification",
             description=(
-                "Welcome to **Greenville Roleplay Network**.\n\n"
+                "Welcome to **Official Greenville Roleplay Network**.\n\n"
                 "To access the server, you must verify your Roblox account. "
                 "Click the button below and enter your Roblox username.\n\n"
                 "**How it works:**\n"
@@ -238,7 +238,7 @@ class Verification(commands.Cog):
             ),
             color=COLOR,
         )
-        embed.set_footer(text="GVRN Verification System")
+        embed.set_footer(text="OGVRN Verification System")
 
         await ctx.send(embed=embed, view=VerifyPanelView())
 

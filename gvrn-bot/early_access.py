@@ -56,7 +56,7 @@ class EarlyAccess(commands.Cog):
         ping = f"<@&{EA_PING_ROLE_ID}>" if EA_PING_ROLE_ID else ""
 
         embed = discord.Embed(
-            title="Greenville Roleplay Network — Early Access",
+            title="Official Greenville Roleplay Network — Early Access",
             description=(
                 f"{message}\n\n"
                 "Press the button below to get the server code.\n"
@@ -75,7 +75,7 @@ class EarlyAccess(commands.Cog):
         if EA_IMAGE_URL:
             embed.set_image(url=EA_IMAGE_URL)
 
-        embed.set_footer(text="GVRN Sessions")
+        embed.set_footer(text="OGVRN Sessions")
 
         await interaction.channel.send(content=ping, embed=embed, view=EarlyAccessCodeView(code))
         await interaction.followup.send("Early access panel sent.", ephemeral=True)

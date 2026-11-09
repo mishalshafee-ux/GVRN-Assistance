@@ -56,7 +56,7 @@ class ReleaseSession(commands.Cog):
         ping = f"<@&{RELEASE_PING_ROLE_ID}>" if RELEASE_PING_ROLE_ID else ""
 
         embed = discord.Embed(
-            title="Greenville Roleplay Network — Roleplay Session Released",
+            title="Official Greenville Roleplay Network — Roleplay Session Released",
             description=(
                 f"> — {interaction.user.mention} has now released their session! You are welcome to join "
                 "using the server code found below. Before joining the session, make sure you’ve read "
@@ -74,7 +74,7 @@ class ReleaseSession(commands.Cog):
         if RELEASE_IMAGE_URL:
             embed.set_image(url=RELEASE_IMAGE_URL)
 
-        embed.set_footer(text="GVRN Sessions")
+        embed.set_footer(text="OGVRN Sessions")
 
         await interaction.channel.send(content=ping, embed=embed, view=ReleaseCodeView(code))
 

@@ -193,7 +193,7 @@ def ticket_embed(user, config):
         ),
         color=COLOR,
     )
-    embed.set_footer(text="GVRN Support")
+    embed.set_footer(text="OGVRN Support")
     return embed
 
 
@@ -492,7 +492,7 @@ class Tickets(commands.Cog):
     @commands.has_permissions(manage_channels=True)
     async def ticket_panel(self, ctx):
         embed = discord.Embed(
-            title="GVRN Support Centre",
+            title="OGVRN Support Centre",
             description=(
                 "If you have questions, encounter a bug, or need assistance, our support team is here for you. "
                 "Open a ticket and we will respond as quickly as possible.\n\n"
@@ -508,7 +508,7 @@ class Tickets(commands.Cog):
             ),
             color=COLOR,
         )
-        embed.set_footer(text="GVRN Tickets")
+        embed.set_footer(text="OGVRN Tickets")
         await ctx.send(embed=embed, view=TicketPanelView())
 
 
@@ -553,15 +553,15 @@ async def send_partner_notice_once(message):
         return
 
     embed = discord.Embed(
-        title="GVRN Partnership Information",
+        title="OGVRN Partnership Information",
         description=(
-            f"{PARTNER_ARROW} Thank you for your interest in partnering with **Greenville Roleplay Network**.\n\n"
-            f"{PARTNER_DOT} Please provide your server name, invite link, community type, and why you want to partner with GVRN.\n"
+            f"{PARTNER_ARROW} Thank you for your interest in partnering with **Official Greenville Roleplay Network**.\n\n"
+            f"{PARTNER_DOT} Please provide your server name, invite link, community type, and why you want to partner with OGVRN.\n"
             f"{PARTNER_DOT} Our team will review your request and respond in this ticket."
         ),
         color=0x7EC8E3,
     )
-    embed.set_footer(text="GVRN Partnership Team")
+    embed.set_footer(text="OGVRN Partnership Team")
 
     await message.channel.send(embed=embed)
 

@@ -1,18 +1,18 @@
 import discord
 
 SESSION_DELETE_FOOTERS = {
-    "GVRN Sessions",
-    "GVRN Early Access",
-    "GVRN Session Released",
-    "GVRN Re-Invites",
-    "GVRN Session Concluded",
-    "GVRN Link Regeneration",
+    "OGVRN Sessions",
+    "OGVRN Early Access",
+    "OGVRN Session Released",
+    "OGVRN Re-Invites",
+    "OGVRN Session Concluded",
+    "OGVRN Link Regeneration",
 }
 
 SESSION_KEEP_FOOTERS = {
-    "GVRN Session Information",
-    "Greenville Roleplay Network",
-    "GVRN Session Info Image",
+    "OGVRN Session Information",
+    "Official Greenville Roleplay Network",
+    "OGVRN Session Info Image",
 }
 
 

@@ -72,7 +72,7 @@ class Session(commands.Cog):
         ping = role_mention(SESSION_PING_ROLE_ID)
 
         embed = discord.Embed(
-            title="Greenville Roleplay Network - Roleplay Session Startup",
+            title="Official Greenville Roleplay Network - Roleplay Session Startup",
             description=(
                 f"› {interaction.user.mention} is hosting a roleplay session! If you intend on joining, "
                 "react below with the host's chosen reaction. If you react without joining, you could face "
@@ -85,7 +85,7 @@ class Session(commands.Cog):
             ),
             color=COLOR,
         )
-        embed.set_footer(text="GVRN Sessions")
+        embed.set_footer(text="OGVRN Sessions")
 
         if SESSION_IMAGE_URL:
             embed.set_image(url=SESSION_IMAGE_URL)
@@ -152,7 +152,7 @@ class Session(commands.Cog):
             ),
             color=COLOR,
         )
-        setup_embed.set_footer(text="GVRN Sessions")
+        setup_embed.set_footer(text="OGVRN Sessions")
 
         await channel.send(embed=setup_embed)
 

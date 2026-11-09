@@ -120,7 +120,7 @@ class RobloxVerification(commands.Cog):
     @commands.has_guild_permissions(manage_guild=True)
     async def verifypanel(self, ctx):
         embed = discord.Embed(
-            title="GVRN Roblox Verification",
+            title="OGVRN Roblox Verification",
             description=(
                 "Click the button below to verify your Roblox account "
                 "and receive the Civilian role."

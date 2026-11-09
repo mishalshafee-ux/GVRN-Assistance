@@ -113,7 +113,7 @@ def save_statuses(statuses):
 def build_panel_message():
     statuses = load_statuses()
     lines = [
-        "# 💬 Greenville Roleplay Network | Applications 💬",
+        "# 💬 Official Greenville Roleplay Network | Applications 💬",
         "",
         f"➜ Applications marked with {OPEN_MARK} are **open**. Applications marked with {CLOSED_MARK} are **closed**.",
         "Please only apply to open applications, as closed applications will not be evaluated.",

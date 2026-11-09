@@ -14,7 +14,7 @@ INFRACTION_COMMAND_ROLE_ID = int(os.getenv("INFRACTION_COMMAND_ROLE_ID", "0"))
 
 INFRACTION_COLOR = 0x7EC8E3
 INFRACTION_APPEAL_TEXT = os.getenv("INFRACTION_APPEAL_TEXT", "by opening an appeal application")
-INFRACTION_SERVER_NAME = "Greenville Roleplay Network"
+INFRACTION_SERVER_NAME = "Official Greenville Roleplay Network"
 INFRACTION_DATA_FILE = Path("infraction_cases.json")
 
 
@@ -150,7 +150,7 @@ class Infractions(commands.Cog):
             description=(
                 f"✅ **{member.display_name} has been warned.** || "
                 f"__Infraction Notice__: {INFRACTION_SERVER_NAME}\n\n"
-                f"> • **Dear user, you received an __Infraction__ in GVRN due to:**\n\n"
+                f"> • **Dear user, you received an __Infraction__ in OGVRN due to:**\n\n"
                 f"**Case:** `{case_id}`\n"
                 f"Reason & Evidence: **{reason_and_evidence}**\n\n"
                 f"**If you believe that this**\n"

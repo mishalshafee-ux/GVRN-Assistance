@@ -82,7 +82,7 @@ class ExtraCommands(commands.Cog):
             f"Ticket renamed to `{clean_name[:100]}`."
         )
 
-    @app_commands.command(name="embed", description="Send a custom GVRN embed.")
+    @app_commands.command(name="embed", description="Send a custom OGVRN embed.")
     @app_commands.describe(
         description="Embed message",
         title="Optional embed title",

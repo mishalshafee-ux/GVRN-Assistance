@@ -38,7 +38,7 @@ class StatusRoles(commands.Cog):
 
         if has_status and not already_has_role:
             try:
-                await after.add_roles(role, reason="GVRN custom status supporter")
+                await after.add_roles(role, reason="OGVRN custom status supporter")
             except discord.Forbidden:
                 print("Cannot add Server Contributor role. Check role hierarchy and Manage Roles.")
                 return
@@ -50,12 +50,12 @@ class StatusRoles(commands.Cog):
                     title="Server Contributor",
                     description=(
                         f"{after.mention}, thank you for showing your support. "
-                        f"By using GVRN in your custom status, you earned the "
+                        f"By using OGVRN in your custom status, you earned the "
                         f"**{role.name}** role."
                     ),
                     color=0x7EC8E3,
                 )
-                embed.set_footer(text="Greenville Roleplay Network")
+                embed.set_footer(text="Official Greenville Roleplay Network")
 
                 await channel.send(
                     content=after.mention,
@@ -67,7 +67,7 @@ class StatusRoles(commands.Cog):
             try:
                 await after.remove_roles(
                     role,
-                    reason="GVRN removed from custom status",
+                    reason="OGVRN removed from custom status",
                 )
             except discord.Forbidden:
                 print("Cannot remove Server Contributor role. Check permissions.")

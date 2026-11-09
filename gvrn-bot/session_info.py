@@ -43,14 +43,14 @@ class SessionInfo(commands.Cog):
         if SESSION_INFO_IMAGE_URL:
             image_embed = discord.Embed(color=COLOR)
             image_embed.set_image(url=SESSION_INFO_IMAGE_URL)
-            image_embed.set_footer(text="GVRN Session Info Image")
+            image_embed.set_footer(text="OGVRN Session Info Image")
             await channel.send(embed=image_embed)
 
         embed = discord.Embed(
-            title="Greenville Roleplay Network — Roleplay 1",
+            title="Official Greenville Roleplay Network — Roleplay 1",
             description=(
-                "> • Welcome to **Greenville Roleplay Network - Roleplay 1**. Within this channel, "
-                "**Greenville Roleplay Network** Staff Members will host sessions. Before joining a "
+                "> • Welcome to **Official Greenville Roleplay Network - Roleplay 1**. Within this channel, "
+                "**Official Greenville Roleplay Network** Staff Members will host sessions. Before joining a "
                 "session, ensure to read over community-information.\n\n"
                 "**Before Joining Sessions:**\n"
                 "› Ensure to register your vehicles within **/vehicle-registeration**.\n"
@@ -60,7 +60,7 @@ class SessionInfo(commands.Cog):
             ),
             color=COLOR,
         )
-        embed.set_footer(text="Greenville Roleplay Network")
+        embed.set_footer(text="Official Greenville Roleplay Network")
 
         await channel.send(embed=embed, view=SessionInfoView())
 

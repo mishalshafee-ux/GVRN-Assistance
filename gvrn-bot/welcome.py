@@ -14,9 +14,9 @@ VERIFICATION_CHANNEL_ID = int(os.getenv("VERIFICATION_CHANNEL_ID", "0"))
 WELCOME_CACHE_FILE = Path("welcome_cache.json")
 WELCOME_DEDUPE = {}
 
-SERVER_NAME = "GVRN"
+SERVER_NAME = "OGVRN"
 WELCOME_COLOR = 0x7EC8E3
-WELCOME_TITLE = "🌐 Welcome to GVRN!"
+WELCOME_TITLE = "🌐 Welcome to OGVRN!"
 
 
 def load_cache():

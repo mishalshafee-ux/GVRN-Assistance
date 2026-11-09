@@ -3,7 +3,7 @@ import os
 import discord
 from discord.ext import commands
 
-GVRNAD_ROLE_ID = int(os.getenv("GVRNAD_ROLE_ID", "1531256052593459240") or 1531256052593459240)
+OGVRNAD_ROLE_ID = int(os.getenv("OGVRNAD_ROLE_ID", "1531256052593459240") or 1531256052593459240)
 
 
 def has_gvrnad_role():
@@ -11,7 +11,7 @@ def has_gvrnad_role():
         if ctx.author.guild_permissions.administrator:
             return True
 
-        return any(role.id == GVRNAD_ROLE_ID for role in ctx.author.roles)
+        return any(role.id == OGVRNAD_ROLE_ID for role in ctx.author.roles)
 
     return commands.check(predicate)
 

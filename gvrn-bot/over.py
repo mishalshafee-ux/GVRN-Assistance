@@ -55,7 +55,7 @@ class SessionOver(commands.Cog):
         duration = duration_text(started_at)
 
         embed = discord.Embed(
-            title="Greenville Roleplay Network - Session Conclusion",
+            title="Official Greenville Roleplay Network - Session Conclusion",
             description=(
                 f"› {interaction.user.mention} has unfortunately concluded their session. "
                 "We thank you all for those who attended, and hope to see you in future sessions. "
@@ -64,7 +64,7 @@ class SessionOver(commands.Cog):
             ),
             color=COLOR,
         )
-        embed.set_footer(text="GVRN Session Concluded")
+        embed.set_footer(text="OGVRN Session Concluded")
 
         if OVER_IMAGE_URL:
             embed.set_image(url=OVER_IMAGE_URL)

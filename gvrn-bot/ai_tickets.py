@@ -27,21 +27,21 @@ AI_INTERACTION_IDS = {}
 AI_HISTORY = {}
 
 SYSTEM_PROMPT = """
-You are GVRN's ticket assistant.
+You are OGVRN's ticket assistant.
 
 Identity:
-- GVRN means Greenville Roleplay Network.
-- You were developed and are operated by Miguel, the owner of GVRN.
+- OGVRN means Official Greenville Roleplay Network.
+- You were developed and are operated by Miguel, the owner of OGVRN.
 - If asked who owns or developed you, say Miguel.
 - Do not claim that OpenRouter, Gemini, or another AI provider owns or developed you.
 
 Help with partnerships, applications, appeals, tickets, and general server support.
 Do not use emojis.
-Do not invent GVRN rules.
+Do not invent OGVRN rules.
 
 Partnership information:
-- 0-20 members: the partner server uses no ping and GVRN uses a here ping.
-- 21-50 members: the partner server uses a here ping and GVRN uses an everyone ping.
+- 0-20 members: the partner server uses no ping and OGVRN uses a here ping.
+- 21-50 members: the partner server uses a here ping and OGVRN uses an everyone ping.
 - 51+ members: both servers may use an everyone ping.
 
 These are ping policies only. Do not say that members must join either server.
@@ -102,9 +102,9 @@ def get_member_tier(member_count):
 
 def get_requirement(member_count):
     if member_count <= 20:
-        return "0-20 members: the partner server uses no ping and GVRN uses a here ping."
+        return "0-20 members: the partner server uses no ping and OGVRN uses a here ping."
     if member_count <= 50:
-        return "21-50 members: the partner server uses a here ping and GVRN uses an everyone ping."
+        return "21-50 members: the partner server uses a here ping and OGVRN uses an everyone ping."
     return "51+ members: both servers may use an everyone ping."
 
 
@@ -113,7 +113,7 @@ def local_ai_fallback(question):
 
     if any(word in question for word in ("what questions", "what can you answer", "help with")):
         return (
-            "I can help with GVRN partnerships, partnership requirements, "
+            "I can help with OGVRN partnerships, partnership requirements, "
             "advertisement submissions, applications, appeals, reports, "
             "ticket questions, and general server support."
         )
@@ -126,9 +126,9 @@ def local_ai_fallback(question):
 
     if any(word in question for word in ("partner", "partnership", "requirement", "criteria")):
         return (
-            "**GVRN Partnership Requirements**\n\n"
-            "**0-20 members:** Your server uses no ping; GVRN uses a here ping.\n"
-            "**21-50 members:** Your server uses a here ping; GVRN uses an everyone ping.\n"
+            "**OGVRN Partnership Requirements**\n\n"
+            "**0-20 members:** Your server uses no ping; OGVRN uses a here ping.\n"
+            "**21-50 members:** Your server uses a here ping; OGVRN uses an everyone ping.\n"
             "**51+ members:** Both servers may use an everyone ping.\n\n"
             "To submit an advertisement, open a partnership ticket."
         )
@@ -144,7 +144,7 @@ def local_ai_fallback(question):
         return "I am doing well, thank you."
 
     return (
-        "I can help with GVRN partnerships, applications, appeals, "
+        "I can help with OGVRN partnerships, applications, appeals, "
         "reports, and general server questions."
     )
 
@@ -306,7 +306,7 @@ class AITicketAssistant(commands.Cog):
                     return
 
                 embed = discord.Embed(
-                    title="GVRN Partnership Advertisement",
+                    title="OGVRN Partnership Advertisement",
                     description=content[:4000],
                     color=0x7EC8E3,
                 )
@@ -320,7 +320,7 @@ class AITicketAssistant(commands.Cog):
                     value=f"{member_count:,}",
                     inline=True,
                 )
-                embed.set_footer(text="GVRN Partnership Network")
+                embed.set_footer(text="OGVRN Partnership Network")
 
                 await destination.send(
                     content=f"{ping} | Representative: {message.author.mention}",
@@ -336,7 +336,7 @@ class AITicketAssistant(commands.Cog):
                 PARTNER_TICKETS.pop(ticket_id, None)
 
                 await message.channel.send(
-                    "Your partnership advertisement has been sent to the GVRN partners channel.",
+                    "Your partnership advertisement has been sent to the OGVRN partners channel.",
                     )
                 return
 
@@ -367,9 +367,9 @@ class AITicketAssistant(commands.Cog):
                 }
 
             await message.channel.send(
-                "**GVRN Partnership Requirements**\n\n"
-                "**0-20 members:** No ping for your server; GVRN uses a here ping.\n"
-                "**21-50 members:** Your server uses a here ping; GVRN uses an everyone ping.\n"
+                "**OGVRN Partnership Requirements**\n\n"
+                "**0-20 members:** No ping for your server; OGVRN uses a here ping.\n"
+                "**21-50 members:** Your server uses a here ping; OGVRN uses an everyone ping.\n"
                 "**51+ members:** Both servers may use an everyone ping.\n\n"
                 "Your advertisement must clearly show your server name, invite link, "
                 "community type, and partnership information.",
@@ -447,7 +447,7 @@ class AITicketAssistant(commands.Cog):
                         "Authorization": f"Bearer {self.api_key}",
                         "Content-Type": "application/json",
                         "HTTP-Referer": "https://gvrn.wispbyte.app",
-                        "X-Title": "GVRN Discord Assistant",
+                        "X-Title": "OGVRN Discord Assistant",
                     },
                     json=payload,
                 ) as response:

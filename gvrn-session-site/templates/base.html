@@ -3,9 +3,9 @@
 <head>
     <title>
     {% if request.path == '/dashboard' or request.path.startswith('/apply') or request.path.startswith('/license-quiz') or request.path.startswith('/staff-application') or request.path.startswith('/appeal') %}
-        GVRN Civilian Portal
+        OGVRN Civilian Portal
     {% else %}
-        GVRN Staff Portal
+        OGVRN Staff Portal
     {% endif %}
     </title>
     <link rel="icon" type="image/gif" href="/static/halloween-logo.gif">
@@ -493,7 +493,7 @@ pre {
 }
 
 
-/* GVRN GRAY THEME */
+/* OGVRN GRAY THEME */
 
 :root {
     --bg: #25282d;
@@ -623,11 +623,11 @@ small {
         <div class="loader-text">Loading</div>
     </div>
 </div>
-<header><img src="/static/halloween-logo.gif" class="header-logo" alt="GVRN Logo">
+<header><img src="/static/halloween-logo.gif" class="header-logo" alt="OGVRN Logo">
     {% if request.path == '/dashboard' or request.path.startswith('/apply') or request.path.startswith('/license-quiz') or request.path.startswith('/staff-application') or request.path.startswith('/appeal') %}
-        GVRN Civilian Portal
+        OGVRN Civilian Portal
     {% else %}
-        GVRN Staff Portal
+        OGVRN Staff Portal
     {% endif %}
 </header>
 <main>

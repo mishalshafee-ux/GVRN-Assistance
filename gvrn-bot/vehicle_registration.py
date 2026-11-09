@@ -95,7 +95,7 @@ class VehicleRegisterModal(discord.ui.Modal, title="Vehicle Registration"):
     colour = discord.ui.TextInput(label="Vehicle Colour", placeholder="Example: Black", max_length=50)
     make = discord.ui.TextInput(label="Vehicle Make", placeholder="Example: Ford Crown Victoria", max_length=80)
     year = discord.ui.TextInput(label="Vehicle Year", placeholder="Example: 2011", max_length=4)
-    plate = discord.ui.TextInput(label="Vehicle Plate", placeholder="Example: GVRN123", max_length=20)
+    plate = discord.ui.TextInput(label="Vehicle Plate", placeholder="Example: OGVRN123", max_length=20)
 
     async def on_submit(self, interaction: discord.Interaction):
         data = load_data()

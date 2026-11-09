@@ -11,7 +11,7 @@ class CommandList(commands.Cog):
     @commands.command(name="commands", aliases=["cmds", "helpme", "command"])
     async def commands_list(self, ctx):
         embed = discord.Embed(
-            title="GVRN Bot Commands",
+            title="OGVRN Bot Commands",
             description="These commands work with both `!` and `?`.",
             color=COLOR,
         )
@@ -23,7 +23,7 @@ class CommandList(commands.Cog):
                 "`!verifypanel` - Sends the verify panel\n"
                 "`!lpanel` - Sends application panel\n"
                 "`!sessioninfo` - Sends session info panel\n"
-                "`!GVRNad` - Sends GVRN advertisement"
+                "`!OGVRNad` - Sends OGVRN advertisement"
             ),
             inline=False,
         )

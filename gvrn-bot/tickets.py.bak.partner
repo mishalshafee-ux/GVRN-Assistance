@@ -193,7 +193,7 @@ def ticket_embed(user, config):
         ),
         color=COLOR,
     )
-    embed.set_footer(text="GVRN Support")
+    embed.set_footer(text="OGVRN Support")
     return embed
 
 
@@ -492,7 +492,7 @@ class Tickets(commands.Cog):
     @commands.has_permissions(manage_channels=True)
     async def ticket_panel(self, ctx):
         embed = discord.Embed(
-            title="GVRN Support Centre",
+            title="OGVRN Support Centre",
             description=(
                 "If you have questions, encounter a bug, or need assistance, our support team is here for you. "
                 "Open a ticket and we will respond as quickly as possible.\n\n"
@@ -508,7 +508,7 @@ class Tickets(commands.Cog):
             ),
             color=COLOR,
         )
-        embed.set_footer(text="GVRN Tickets")
+        embed.set_footer(text="OGVRN Tickets")
         await ctx.send(embed=embed, view=TicketPanelView())
 
 

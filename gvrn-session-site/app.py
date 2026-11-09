@@ -335,7 +335,7 @@ def build_result_payload(application, decision, reason, reviewer, application_na
             },
         ],
         "footer": {
-            "text": "Greenville Roleplay Network Applications"
+            "text": "Official Greenville Roleplay Network Applications"
         },
     }
 
