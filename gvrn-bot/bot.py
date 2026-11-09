@@ -53,6 +53,7 @@ EXTENSIONS = [
     "cohost",
     "check_perms",
     "roblox_verification",
+    "audit_logs",
     "extra_commands",
 ]
 
