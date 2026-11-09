@@ -2,16 +2,14 @@ import json
 import os
 import secrets
 from pathlib import Path
+from urllib.parse import urlencode
 
 import requests
 from flask import Blueprint, redirect, request
-from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
+from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 
 
 roblox_oauth = Blueprint("roblox_oauth", __name__)
-
-DATA_DIR = Path(__file__).resolve().parent / "data"
-LINKS_FILE = DATA_DIR / "roblox_links.json"
 
 CLIENT_ID = os.getenv("ROBLOX_CLIENT_ID", "")
 CLIENT_SECRET = os.getenv("ROBLOX_CLIENT_SECRET", "")
@@ -25,15 +23,49 @@ GUILD_ID = os.getenv("GUILD_ID", "")
 CIVILIAN_ROLE_ID = os.getenv("CIVILIAN_ROLE_ID", "")
 UNVERIFIED_ROLE_ID = os.getenv("UNVERIFIED_ROLE_ID", "")
 
-AUTH_URL = "https://apis.roblox.com/oauth/v1/authorize"
-TOKEN_URL = "https://apis.roblox.com/oauth/v1/token"
-USERINFO_URL = "https://apis.roblox.com/oauth/v1/userinfo"
-DISCORD_API = "https://discord.com/api/v10"
+DATA_DIR = Path(__file__).resolve().parent / "data"
+LINKS_FILE = DATA_DIR / "roblox_links.json"
 
 serializer = URLSafeTimedSerializer(
     SECRET_KEY,
-    salt="gvrn-roblox-verification",
+    salt="gvrn-roblox-oauth",
 )
+
+
+def page(title, message):
+    return f"""
+    <!doctype html>
+    <html>
+    <head>
+        <title>{title}</title>
+        <style>
+            body {{
+                background: #20242a;
+                color: white;
+                font-family: Arial, sans-serif;
+                display: grid;
+                place-items: center;
+                min-height: 100vh;
+            }}
+            main {{
+                max-width: 600px;
+                padding: 32px;
+                border: 1px solid #7EC8E3;
+                border-radius: 16px;
+                background: #2b3139;
+                text-align: center;
+            }}
+            h1 {{ color: #7EC8E3; }}
+        </style>
+    </head>
+    <body>
+        <main>
+            <h1>{title}</h1>
+            <p>{message}</p>
+        </main>
+    </body>
+    </html>
+    """
 
 
 def load_links():
@@ -51,44 +83,6 @@ def save_links(links):
     LINKS_FILE.write_text(json.dumps(links, indent=2))
 
 
-def page(title, message):
-    return f"""
-    <!doctype html>
-    <html>
-    <head>
-        <title>{title}</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <style>
-            body {{
-                background: #20242a;
-                color: #f4f7fb;
-                font-family: Arial, sans-serif;
-                display: grid;
-                place-items: center;
-                min-height: 100vh;
-                margin: 0;
-            }}
-            main {{
-                max-width: 560px;
-                padding: 32px;
-                border: 1px solid #7EC8E3;
-                border-radius: 16px;
-                background: #2a3038;
-                text-align: center;
-            }}
-            h1 {{ color: #7EC8E3; }}
-        </style>
-    </head>
-    <body>
-        <main>
-            <h1>{title}</h1>
-            <p>{message}</p>
-        </main>
-    </body>
-    </html>
-    """
-
-
 def discord_headers():
     return {
         "Authorization": f"Bot {DISCORD_TOKEN}",
@@ -96,63 +90,9 @@ def discord_headers():
     }
 
 
-def discord_url(path):
-    return f"{DISCORD_API}{path}"
-
-
-def update_discord_member(discord_id, roblox_name):
-    if not all((
-        DISCORD_TOKEN,
-        GUILD_ID,
-        CIVILIAN_ROLE_ID,
-        UNVERIFIED_ROLE_ID,
-    )):
-        raise RuntimeError("Discord OAuth role settings are incomplete.")
-
-    add_url = discord_url(
-        f"/guilds/{GUILD_ID}/members/{discord_id}/roles/{CIVILIAN_ROLE_ID}"
-    )
-    remove_url = discord_url(
-        f"/guilds/{GUILD_ID}/members/{discord_id}/roles/{UNVERIFIED_ROLE_ID}"
-    )
-    member_url = discord_url(
-        f"/guilds/{GUILD_ID}/members/{discord_id}"
-    )
-
-    add_response = requests.put(
-        add_url,
-        headers=discord_headers(),
-        timeout=15,
-    )
-
-    if add_response.status_code not in (200, 204):
-        raise RuntimeError(
-            f"Could not add Civilian role: {add_response.status_code}"
-        )
-
-    requests.delete(
-        remove_url,
-        headers=discord_headers(),
-        timeout=15,
-    )
-
-    nickname = f"[Civilian] {roblox_name}"[:32]
-
-    nickname_response = requests.patch(
-        member_url,
-        headers=discord_headers(),
-        json={"nick": nickname},
-        timeout=15,
-    )
-
-    nickname_changed = nickname_response.status_code in (200, 204)
-
-    return nickname, nickname_changed
-
-
 @roblox_oauth.route("/roblox/authorize")
 def authorize():
-    discord_id = request.args.get("discord_id", "").strip()
+    discord_id = request.args.get("discord_id", "")
 
     if not discord_id.isdigit():
         return page("Verification error", "Invalid Discord account."), 400
@@ -162,39 +102,28 @@ def authorize():
         "nonce": secrets.token_urlsafe(24),
     })
 
-    params = {
+    query = urlencode({
         "client_id": CLIENT_ID,
         "redirect_uri": REDIRECT_URI,
         "scope": "openid profile",
         "response_type": "code",
         "state": state,
-    }
+    })
 
-    query = "&".join(
-        f"{key}={requests.utils.quote(str(value), safe='')}"
-        for key, value in params.items()
+    return redirect(
+        f"https://apis.roblox.com/oauth/v1/authorize?{query}"
     )
-
-    return redirect(f"{AUTH_URL}?{query}")
 
 
 @roblox_oauth.route("/roblox/callback")
 def callback():
-    error = request.args.get("error")
-
-    if error:
-        return page(
-            "Verification cancelled",
-            "Roblox authorization was cancelled.",
-        )
-
     code = request.args.get("code")
     state = request.args.get("state")
 
     if not code or not state:
         return page(
             "Verification error",
-            "Roblox did not return a valid authorization response.",
+            "Roblox authorization was incomplete.",
         ), 400
 
     try:
@@ -206,7 +135,7 @@ def callback():
         ), 400
 
     token_response = requests.post(
-        TOKEN_URL,
+        "https://apis.roblox.com/oauth/v1/token",
         data={
             "client_id": CLIENT_ID,
             "client_secret": CLIENT_SECRET,
@@ -218,37 +147,22 @@ def callback():
     )
 
     if token_response.status_code != 200:
-        print(
-            "Roblox token error:",
-            token_response.status_code,
-            token_response.text,
-        )
+        print("Roblox token error:", token_response.text)
         return page(
             "Verification error",
-            "Roblox authorization could not be completed.",
+            "Roblox authorization failed.",
         ), 502
 
-    token_data = token_response.json()
-    access_token = token_data.get("access_token")
-
-    if not access_token:
-        return page(
-            "Verification error",
-            "Roblox did not return an access token.",
-        ), 502
+    access_token = token_response.json().get("access_token")
 
     user_response = requests.get(
-        USERINFO_URL,
+        "https://apis.roblox.com/oauth/v1/userinfo",
         headers={"Authorization": f"Bearer {access_token}"},
         timeout=15,
     )
 
     if user_response.status_code != 200:
-        print(
-            "Roblox user info error:",
-            user_response.status_code,
-            user_response.text,
-        )
+        print("Roblox user error:", user_response.text)
         return page(
             "Verification error",
             "Roblox account information could not be read.",
@@ -261,27 +175,54 @@ def callback():
         or user_data.get("name")
         or "Roblox User"
     )
+    discord_id = state_data["discord_id"]
 
     if not roblox_id:
         return page(
             "Verification error",
-            "Roblox did not provide a user ID.",
+            "Roblox did not return a user ID.",
         ), 502
 
-    discord_id = state_data["discord_id"]
+    role_url = (
+        f"https://discord.com/api/v10/guilds/{GUILD_ID}"
+        f"/members/{discord_id}/roles/{CIVILIAN_ROLE_ID}"
+    )
 
-    try:
-        nickname, nickname_changed = update_discord_member(
-            discord_id,
-            roblox_name,
-        )
-    except Exception as exc:
-        print(f"Discord role update error: {exc}")
+    role_response = requests.put(
+        role_url,
+        headers=discord_headers(),
+        timeout=15,
+    )
+
+    if role_response.status_code not in (200, 204):
+        print("Discord role error:", role_response.text)
         return page(
             "Verification error",
-            "The Roblox account was confirmed, but Discord roles "
-            "could not be updated. Contact staff.",
+            "The Civilian role could not be added.",
         ), 500
+
+    remove_url = (
+        f"https://discord.com/api/v10/guilds/{GUILD_ID}"
+        f"/members/{discord_id}/roles/{UNVERIFIED_ROLE_ID}"
+    )
+
+    requests.delete(
+        remove_url,
+        headers=discord_headers(),
+        timeout=15,
+    )
+
+    member_url = (
+        f"https://discord.com/api/v10/guilds/{GUILD_ID}"
+        f"/members/{discord_id}"
+    )
+
+    requests.patch(
+        member_url,
+        headers=discord_headers(),
+        json={"nick": f"[Civilian] {roblox_name}"[:32]},
+        timeout=15,
+    )
 
     links = load_links()
     links[discord_id] = {
@@ -290,15 +231,7 @@ def callback():
     }
     save_links(links)
 
-    nickname_text = (
-        f"Nickname changed to {nickname}."
-        if nickname_changed
-        else "Discord did not allow the nickname change."
-    )
-
     return page(
         "Verification successful",
-        f"Verified Roblox account: {roblox_name}. "
-        f"Civilian role added. {nickname_text} "
-        "You may return to Discord.",
+        f"Verified as {roblox_name}. The Civilian role was added.",
     )

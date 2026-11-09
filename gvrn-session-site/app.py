@@ -9,11 +9,13 @@ from pathlib import Path
 from dotenv import load_dotenv
 from flask import send_from_directory, Flask, flash, jsonify, redirect, render_template, request, session, url_for
 from werkzeug.security import check_password_hash, generate_password_hash
+from roblox_oauth import roblox_oauth
 
 load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "change-this-secret-key")
+app.register_blueprint(roblox_oauth)
 
 DATA_DIR = Path("data")
 USERS_FILE = DATA_DIR / "users.json"
