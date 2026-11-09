@@ -6,7 +6,6 @@ from discord import app_commands
 from discord.ext import commands
 
 
-GUILD_ID = int(os.getenv("GUILD_ID", "0") or 0)
 CIVILIAN_ROLE_ID = int(os.getenv("CIVILIAN_ROLE_ID", "0") or 0)
 UNVERIFIED_ROLE_ID = int(os.getenv("UNVERIFIED_ROLE_ID", "0") or 0)
 BLOXLINK_API_KEY = os.getenv("BLOXLINK_API_KEY", "")
@@ -18,7 +17,7 @@ BLOXLINK_URL = (
 ROBLOX_URL = "https://users.roblox.com/v1/users/{roblox_id}"
 
 
-def extract_roblox_id(data):
+def get_roblox_id(data):
     if not isinstance(data, dict):
         return None
 
@@ -43,7 +42,10 @@ async def get_roblox_user(guild_id, discord_id):
 
     async with aiohttp.ClientSession(timeout=timeout) as session:
         async with session.get(
-            BLOXLINK_URL.format(guild_id=guild_id, discord_id=discord_id),
+            BLOXLINK_URL.format(
+                guild_id=guild_id,
+                discord_id=discord_id,
+            ),
             headers=headers,
         ) as response:
             if response.status == 404:
@@ -51,12 +53,12 @@ async def get_roblox_user(guild_id, discord_id):
 
             if response.status != 200:
                 raise RuntimeError(
-                    f"Bloxlink HTTP {response.status}"
+                    f"Bloxlink returned HTTP {response.status}"
                 )
 
-            bloxlink_data = await response.json(content_type=None)
+            data = await response.json(content_type=None)
 
-        roblox_id = extract_roblox_id(bloxlink_data)
+        roblox_id = get_roblox_id(data)
 
         if not roblox_id:
             return None
@@ -66,16 +68,71 @@ async def get_roblox_user(guild_id, discord_id):
         ) as response:
             if response.status != 200:
                 raise RuntimeError(
-                    f"Roblox HTTP {response.status}"
+                    f"Roblox returned HTTP {response.status}"
                 )
 
             user_data = await response.json(content_type=None)
 
     return {
-        "id": roblox_id,
         "username": user_data.get("name", "Unknown"),
         "display_name": user_data.get("displayName", "Unknown"),
     }
+
+
+async def verify_member(member):
+    guild = member.guild
+    civilian_role = guild.get_role(CIVILIAN_ROLE_ID)
+    unverified_role = guild.get_role(UNVERIFIED_ROLE_ID)
+
+    if civilian_role is None:
+        return False, "The Civilian role is not configured."
+
+    try:
+        roblox_user = await get_roblox_user(guild.id, member.id)
+    except Exception as error:
+        print(f"Bloxlink verification error: {error}")
+        return False, "The verification service is temporarily unavailable."
+
+    if roblox_user is None:
+        return False, (
+            "Your Discord account is not linked to Roblox through Bloxlink. "
+            "Link your account first, then try again."
+        )
+
+    try:
+        await member.add_roles(
+            civilian_role,
+            reason="Successful Roblox verification",
+        )
+
+        if unverified_role and unverified_role in member.roles:
+            await member.remove_roles(
+                unverified_role,
+                reason="Successful Roblox verification",
+            )
+    except discord.Forbidden:
+        return False, (
+            "I found your Roblox account, but I cannot update your roles. "
+            "Move the bot role above Civilian and Unverified."
+        )
+
+    nickname = f"[Civilian] {roblox_user['username']}"[:32]
+
+    try:
+        await member.edit(
+            nick=nickname,
+            reason="Successful Roblox verification",
+        )
+    except discord.Forbidden:
+        return True, (
+            f"Verified as **{roblox_user['username']}** and added the "
+            "Civilian role. Discord prevented the nickname change."
+        )
+
+    return True, (
+        f"Verified as **{roblox_user['username']}** and added the "
+        f" nickname `{nickname}`."
+    )
 
 
 class VerificationView(discord.ui.View):
@@ -87,97 +144,18 @@ class VerificationView(discord.ui.View):
         style=discord.ButtonStyle.primary,
         custom_id="gvrn:verify_roblox",
     )
-    async def verify(
+    async def verify_button(
         self,
         interaction: discord.Interaction,
         button: discord.ui.Button,
     ):
-        if not interaction.guild:
-            await interaction.response.send_message(
-                "Use this button inside the server.",
-                ephemeral=True,
-            )
-            return
-
         await interaction.response.defer(ephemeral=True)
 
-        member = interaction.user
-        civilian_role = interaction.guild.get_role(CIVILIAN_ROLE_ID)
-        unverified_role = interaction.guild.get_role(UNVERIFIED_ROLE_ID)
-
-        if civilian_role is None:
-            await interaction.followup.send(
-                "The Civilian role is not configured.",
-                ephemeral=True,
-            )
-            return
-
-        try:
-            roblox_user = await get_roblox_user(interaction.guild.id, member.id)
-        except Exception as error:
-            print(f"Roblox verification error: {error}")
-            await interaction.followup.send(
-                "The verification service is temporarily unavailable.",
-                ephemeral=True,
-            )
-            return
-
-        if roblox_user is None:
-            embed = discord.Embed(
-                title="Roblox account not linked",
-                description=(
-                    "Link your Discord account with Bloxlink first, "
-                    "then click this button again."
-                ),
-                color=0x7EC8E3,
-            )
-            await interaction.followup.send(
-                embed=embed,
-                ephemeral=True,
-            )
-            return
-
-        try:
-            await member.add_roles(
-                civilian_role,
-                reason="Successful Roblox verification",
-            )
-
-            if unverified_role and unverified_role in member.roles:
-                await member.remove_roles(
-                    unverified_role,
-                    reason="Successful Roblox verification",
-                )
-        except discord.Forbidden:
-            await interaction.followup.send(
-                "I found your Roblox account, but I cannot update your roles. "
-                "Move my bot role above the verification roles.",
-                ephemeral=True,
-            )
-            return
-
-        nickname = f"[Civilian] {roblox_user['username']}"[:32]
-
-        try:
-            await member.edit(
-                nick=nickname,
-                reason="Successful Roblox verification",
-            )
-            nickname_message = f"Your nickname was changed to `{nickname}`."
-        except discord.Forbidden:
-            nickname_message = (
-                "Your role was updated, but Discord prevented the nickname "
-                "change because you may be an owner or administrator."
-            )
+        success, message = await verify_member(interaction.user)
 
         embed = discord.Embed(
-            title="Verification successful",
-            description=(
-                f"Roblox account: **{roblox_user['username']}**\n"
-                f"Display name: **{roblox_user['display_name']}**\n\n"
-                "The Civilian role was added.\n"
-                f"{nickname_message}"
-            ),
+            title="Verification" if success else "Verification unavailable",
+            description=message,
             color=0x7EC8E3,
         )
 
@@ -192,20 +170,29 @@ class RobloxVerification(commands.Cog):
         self.bot = bot
 
     @app_commands.command(
-        name="verification-panel",
-        description="Send the Roblox verification panel.",
+        name="verify",
+        description="Verify your linked Roblox account.",
     )
-    async def verification_panel(
-        self,
-        interaction: discord.Interaction,
-    ):
-        if not interaction.user.guild_permissions.manage_guild:
-            await interaction.response.send_message(
-                "You need Manage Server permission.",
-                ephemeral=True,
-            )
-            return
+    async def verify(self, interaction: discord.Interaction):
+        await interaction.response.defer(ephemeral=True)
 
+        success, message = await verify_member(interaction.user)
+
+        embed = discord.Embed(
+            title="Verification" if success else "Verification unavailable",
+            description=message,
+            color=0x7EC8E3,
+        )
+
+        await interaction.followup.send(
+            embed=embed,
+            ephemeral=True,
+        )
+
+    @commands.command(name="verifypanel")
+    @commands.guild_only()
+    @commands.has_guild_permissions(manage_guild=True)
+    async def verify_panel(self, ctx):
         embed = discord.Embed(
             title="GVRN Roblox Verification",
             description=(
@@ -215,10 +202,22 @@ class RobloxVerification(commands.Cog):
             color=0x7EC8E3,
         )
 
-        await interaction.response.send_message(
+        await ctx.send(
             embed=embed,
             view=VerificationView(),
         )
+
+    @commands.Cog.listener()
+    async def on_member_join(self, member):
+        try:
+            success, message = await verify_member(member)
+
+            if success:
+                print(
+                    f"Auto-verified {member} in {member.guild}: {message}"
+                )
+        except Exception as error:
+            print(f"Join verification error: {error}")
 
 
 async def setup(bot):
