@@ -14,7 +14,7 @@ roblox_oauth = Blueprint("roblox_oauth", __name__)
 
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 load_dotenv()
-print(f"Roblox OAuth client configured: {bool(os.getenv("ROBLOX_CLIENT_ID"))}")
+print(f"Roblox OAuth client configured: {bool(os.getenv('ROBLOX_CLIENT_ID'))}")
 
 CLIENT_ID = os.getenv("ROBLOX_CLIENT_ID", "").strip()
 CLIENT_SECRET = os.getenv("ROBLOX_CLIENT_SECRET", "").strip()
