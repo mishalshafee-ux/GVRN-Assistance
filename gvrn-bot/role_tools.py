@@ -102,15 +102,15 @@ class RoleTools(commands.Cog):
         for role in roles:
             try:
                 await member.add_roles(role, reason=f"{reason} | Given by {ctx.author}")
-                added.append(role.mention)
+                added.append(role.name)
             except discord.Forbidden:
-                failed.append(role.mention)
+                failed.append(role.name)
 
         message = f"Added roles to {member.mention}: {', '.join(added) if added else 'None'}"
         if failed:
             message += f"\nCould not add: {', '.join(failed)}"
 
-        await ctx.send(message)
+        await ctx.send(message, allowed_mentions=discord.AllowedMentions(users=True, roles=False, everyone=False))
 
         try:
             await ctx.message.delete()
