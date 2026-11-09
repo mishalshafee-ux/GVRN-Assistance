@@ -56,7 +56,7 @@ async def apply_saved_verification(member):
                 reason="Saved Roblox verification",
             )
 
-        nickname = f"[Civilian] {account['roblox_name']}"[:32]
+        nickname = f"{member.name} ({account['roblox_name']})"[:32]
         await member.edit(
             nick=nickname,
             reason="Saved Roblox verification",

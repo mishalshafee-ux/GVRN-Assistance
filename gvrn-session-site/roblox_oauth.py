@@ -222,10 +222,25 @@ def callback():
         f"/members/{discord_id}"
     )
 
+    member_response = requests.get(
+        member_url,
+        headers=discord_headers(),
+        timeout=15,
+    )
+
+    discord_name = "Discord User"
+
+    if member_response.status_code == 200:
+        member_data = member_response.json()
+        discord_name = member_data.get("user", {}).get(
+            "username",
+            "Discord User",
+        )
+
     requests.patch(
         member_url,
         headers=discord_headers(),
-        json={"nick": f"[Civilian] {roblox_name}"[:32]},
+        json={"nick": f"{discord_name} ({roblox_name})"[:32]},
         timeout=15,
     )
 
