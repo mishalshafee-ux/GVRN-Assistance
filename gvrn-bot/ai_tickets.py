@@ -444,7 +444,7 @@ class AITicketAssistant(commands.Cog):
                 async with session.post(
                     "https://openrouter.ai/api/v1/chat/completions",
                     headers={
-                        "Authorization": f"Bearer {self.api_key}",
+                        "Authorization": f"Bearer {self.api_key.strip()}",
                         "Content-Type": "application/json",
                         "HTTP-Referer": "https://gvrn.wispbyte.app",
                         "X-Title": "OGVRN Discord Assistant",
