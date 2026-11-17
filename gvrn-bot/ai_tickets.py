@@ -16,6 +16,10 @@ load_dotenv(Path(__file__).resolve().parent.parent / '.env')
 load_dotenv()
 
 PARTNERSHIP_CHANNEL_ID = 1531721204245856326
+OGVRN_PARTNERSHIP_AD = os.getenv(
+    "OGVRN_PARTNERSHIP_AD",
+    "Official Greenville Roleplay Network (OGVRN)",
+)
 OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "openrouter/free")
 AI_COOLDOWN_SECONDS = 3
 PARTNER_POSTS_FILE = Path(__file__).with_name("partner_posts.json")
@@ -98,6 +102,10 @@ def get_member_tier(member_count):
     if member_count <= 50:
         return "@everyone"
     return "@everyone"
+
+
+def clean_partnership_ad(text):
+    return re.sub(r"@(everyone|here)", r"@\\u200b\\1", text)
 
 
 def get_requirement(member_count):
@@ -280,12 +288,57 @@ class AITicketAssistant(commands.Cog):
 
                 member_count = int(match.group(1).replace(",", ""))
                 workflow["member_count"] = member_count
-                workflow["stage"] = "advertisement"
+                workflow["stage"] = "ogvrn_ad"
 
                 await message.channel.send(
                     f"{get_requirement(member_count)}\n\n"
                     "Please send the partnership advertisement you want posted.",
                     )
+                return
+
+            if workflow["stage"] == "ogvrn_ad":
+                yes_words = (
+                    "yes",
+                    "yeah",
+                    "yep",
+                    "sent",
+                    "already sent",
+                )
+                ad_request_words = (
+                    "send our ad",
+                    "send the ogvrn ad",
+                    "what is your ad",
+                    "what's your ad",
+                    "our advertisement",
+                    "your advertisement",
+                    "your ad",
+                )
+
+                if any(word in lowered for word in ad_request_words) or (
+                    lowered in {"no", "nope", "not yet", "i have not"}
+                ):
+                    await message.channel.send(
+                        f"Here is the official OGVRN advertisement:\n\n"
+                        f"{OGVRN_PARTNERSHIP_AD}\n\n"
+                        "Please send your advertisement next. Do not include "
+                        "@here or @everyone; OGVRN will add the correct ping."
+                    )
+                    workflow["stage"] = "advertisement"
+                    return
+
+                if any(word in lowered for word in yes_words):
+                    workflow["stage"] = "advertisement"
+                    await message.channel.send(
+                        "Thank you. Please send your advertisement now. "
+                        "Do not include @here or @everyone; OGVRN will add "
+                        "the correct ping."
+                    )
+                    return
+
+                await message.channel.send(
+                    "Have you sent the official OGVRN advertisement? "
+                    "Reply yes or no."
+                )
                 return
 
             if workflow["stage"] == "advertisement":
@@ -305,29 +358,26 @@ class AITicketAssistant(commands.Cog):
                             )
                     return
 
-                embed = discord.Embed(
-                    title="OGVRN Partnership Advertisement",
-                    description=content[:4000],
-                    color=0x7EC8E3,
+                representative = message.guild.get_member(
+                    workflow["user_id"]
                 )
-                embed.add_field(
-                    name="Server Representative",
-                    value=message.author.mention,
-                    inline=True,
+                representative_text = (
+                    representative.mention
+                    if representative
+                    else f"<@{workflow['user_id']}>"
                 )
-                embed.add_field(
-                    name="Server Members",
-                    value=f"{member_count:,}",
-                    inline=True,
-                )
-                embed.set_footer(text="OGVRN Partnership Network")
+                advertisement = clean_partnership_ad(content)
 
                 await destination.send(
-                    content=f"{ping} | Representative: {message.author.mention}",
-                    embed=embed,
+                    content=(
+                        f"{ping}\n"
+                        f"Representative: {representative_text}\n\n"
+                        f"{advertisement}"
+                    ),
                     allowed_mentions=discord.AllowedMentions(
                         everyone=True,
                         users=True,
+                        roles=False,
                     ),
                 )
 
