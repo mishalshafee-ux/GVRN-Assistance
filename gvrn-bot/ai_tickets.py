@@ -353,7 +353,7 @@ class AITicketAssistant(commands.Cog):
                 workflow["stage"] = "advertisement"
 
                 await message.channel.send(
-                    f"{get_requirement(member_count)}\\n\\n"
+                    f"{get_requirement(member_count)}\n\n"
                     "Please send your partnership advertisement now."
                 )
                 return
@@ -370,7 +370,7 @@ class AITicketAssistant(commands.Cog):
 
                 if not sent_ogvrn_ad:
                     await message.channel.send(
-                        f"Please send this official OGVRN advertisement first:\\n\\n"
+                        f"Please send this official OGVRN advertisement first:\n\n"
                         f"{OGVRN_PARTNERSHIP_AD}"
                     )
 
@@ -405,8 +405,8 @@ class AITicketAssistant(commands.Cog):
 
                 await destination.send(
                     content=(
-                        f"{ping}\\n"
-                        f"Representative: {representative_text}\\n\\n"
+                        f"{ping}\n"
+                        f"Representative: {representative_text}\n\n"
                         f"{advertisement}"
                     ),
                     allowed_mentions=discord.AllowedMentions(
