@@ -214,7 +214,7 @@ class AITicketAssistant(commands.Cog):
         user_id = message.author.id
 
         partnership_match = re.search(
-            r"\\b(partner|partnership)\\b",
+            r"\b(partner|partnership)\b",
             lowered,
         )
         requirement_request = any(
@@ -235,18 +235,18 @@ class AITicketAssistant(commands.Cog):
             and ticket_id not in PARTNER_TICKETS
             and str(ticket_id) not in load_partner_posts()
         ):
-            member_match = re.search(r"\\b(\\d[\\d,]*)\\s*(members?|membercount)\\b", lowered)
+            member_match = re.search(r"\b(\d[\d,]*)\s*(members?|membercount)\b", lowered)
 
             if member_match:
                 member_count = int(member_match.group(1).replace(",", ""))
                 PARTNER_TICKETS[ticket_id] = {
                     "user_id": user_id,
-                    "stage": "advertisement",
+                    "stage": "ogvrn_ad",
                     "member_count": member_count,
                 }
                 await message.channel.send(
                     f"Thanks. Your server has {member_count:,} members. "
-                    "Please send the partnership advertisement in this ticket."
+                    "Have you sent the official OGVRN advertisement? Reply yes or no."
                 )
             else:
                 PARTNER_TICKETS[ticket_id] = {
@@ -295,7 +295,7 @@ class AITicketAssistant(commands.Cog):
 
                 await message.channel.send(
                     f"{get_requirement(member_count)}\n\n"
-                    "Please send the partnership advertisement you want posted.",
+                    "Have you sent the official OGVRN advertisement? Reply yes or no.",
                     )
                 return
 
