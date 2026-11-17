@@ -159,9 +159,12 @@ def local_ai_fallback(question):
 class AITicketAssistant(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        api_key = os.getenv("OPENROUTER_API_KEY")
+        api_key = os.getenv("OPENROUTER_API_KEY", "").strip()
         self.api_key = api_key
-        print(f"OpenRouter API key configured: {bool(api_key)}")
+        print(
+            "OpenRouter API key configured: "
+            f"{bool(self.api_key)}"
+        )
 
     @commands.Cog.listener()
     async def on_message(self, message):
