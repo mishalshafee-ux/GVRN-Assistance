@@ -337,31 +337,24 @@ class AITicketAssistant(commands.Cog):
 
         if workflow:
             if workflow["stage"] == "member_count":
-                match = re.search(r"\d+", content)
+                digits = "".join(
+                    character for character in content
+                    if character.isdigit()
+                )
 
-                if not match:
+                if not digits:
                     await message.channel.send(
                         "Please tell me how many members your server has."
                     )
                     return
 
-                member_count = int(match.group(1).replace(",", ""))
+                member_count = int(digits)
                 workflow["member_count"] = member_count
                 workflow["stage"] = "advertisement"
 
                 await message.channel.send(
                     f"{get_requirement(member_count)}\\n\\n"
                     "Please send your partnership advertisement now."
-                )
-                return
-
-            if workflow["stage"] == "advertisement":
-                workflow["pending_advertisement"] = content
-                workflow["stage"] = "ogvrn_confirmation"
-
-                await message.channel.send(
-                    "Have you sent the official OGVRN advertisement? "
-                    "Reply yes or no."
                 )
                 return
 
