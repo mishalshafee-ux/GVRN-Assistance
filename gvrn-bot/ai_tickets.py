@@ -337,7 +337,7 @@ class AITicketAssistant(commands.Cog):
 
         if workflow:
             if workflow["stage"] == "member_count":
-                match = re.search(r"\\b(\\d[\\d,]*)\\b", content)
+                match = re.search(r"\d+", content)
 
                 if not match:
                     await message.channel.send(
