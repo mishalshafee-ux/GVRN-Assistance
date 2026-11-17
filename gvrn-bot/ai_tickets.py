@@ -299,6 +299,39 @@ class AITicketAssistant(commands.Cog):
 
         workflow = PARTNER_TICKETS.get(ticket_id)
 
+        workflow_question = (
+            "?" in content
+            or lowered.startswith((
+                "how ",
+                "what ",
+                "when ",
+                "where ",
+                "why ",
+                "can ",
+                "could ",
+                "is ",
+                "are ",
+                "do ",
+                "does ",
+            ))
+            or any(
+                phrase in lowered
+                for phrase in (
+                    "close the ticket",
+                    "close ticket",
+                    "end the ticket",
+                    "delete the ticket",
+                )
+            )
+        )
+
+        if (
+            workflow
+            and workflow["stage"] == "advertisement"
+            and workflow_question
+        ):
+            workflow = None
+
         if workflow and workflow["user_id"] != user_id:
             return
 
