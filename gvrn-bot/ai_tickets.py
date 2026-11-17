@@ -16,10 +16,33 @@ load_dotenv(Path(__file__).resolve().parent.parent / '.env')
 load_dotenv()
 
 PARTNERSHIP_CHANNEL_ID = 1531721204245856326
-OGVRN_PARTNERSHIP_AD = os.getenv(
-    "OGVRN_PARTNERSHIP_AD",
-    "Official Greenville Roleplay Network (OGVRN)",
-)
+OGVRN_PARTNERSHIP_AD = """# Official Greenville Roleplay Network
+
+### "The Future of Roleplays."
+
+Looking for a Greenville roleplay community where realism meets excitement? Your next roleplay experience starts here!
+
+Welcome to Official Greenville Roleplay Network, a growing community dedicated to creating immersive, realistic, and enjoyable roleplay experiences.
+
+Whether you're looking to serve and protect, build your career, or simply enjoy quality roleplays with others, there's a place for you here!
+
+**What we offer**
+
+- Realistic Roleplays — Enjoy organised scenarios and immersive experiences.
+- Professional Staff Team — A team dedicated to keeping the community running smoothly.
+- Friendly Community — Meet new people, make friends, and become part of something bigger.
+
+**We're Recruiting!**
+
+We're currently looking for:
+
+- Dedicated and active staff members
+- Enthusiastic roleplayers
+
+[Make sure to join our community](https://www.roblox.com/share/g/56603729)
+
+Join [Official Greenville Roleplay Network today!](https://discord.gg/yps5DZE824)
+"""
 OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "openrouter/free")
 AI_COOLDOWN_SECONDS = 3
 PARTNER_POSTS_FILE = Path(__file__).with_name("partner_posts.json")
@@ -281,62 +304,27 @@ class AITicketAssistant(commands.Cog):
 
         if workflow:
             if workflow["stage"] == "member_count":
-                match = re.search(r"\b(\d[\d,]*)\b", content)
+                match = re.search(r"\\b(\\d[\\d,]*)\\b", content)
 
                 if not match:
                     await message.channel.send(
-                        "Please tell me how many members your server has.",
-                            )
+                        "Please tell me how many members your server has."
+                    )
                     return
 
                 member_count = int(match.group(1).replace(",", ""))
                 workflow["member_count"] = member_count
-                workflow["stage"] = "ogvrn_ad"
+                workflow["stage"] = "advertisement"
 
                 await message.channel.send(
-                    f"{get_requirement(member_count)}\n\n"
-                    "Have you sent the official OGVRN advertisement? Reply yes or no.",
-                    )
+                    f"{get_requirement(member_count)}\\n\\n"
+                    "Please send your partnership advertisement now."
+                )
                 return
 
-            if workflow["stage"] == "ogvrn_ad":
-                yes_words = (
-                    "yes",
-                    "yeah",
-                    "yep",
-                    "sent",
-                    "already sent",
-                )
-                ad_request_words = (
-                    "send our ad",
-                    "send the ogvrn ad",
-                    "what is your ad",
-                    "what's your ad",
-                    "our advertisement",
-                    "your advertisement",
-                    "your ad",
-                )
-
-                if any(word in lowered for word in ad_request_words) or (
-                    lowered in {"no", "nope", "not yet", "i have not"}
-                ):
-                    await message.channel.send(
-                        f"Here is the official OGVRN advertisement:\n\n"
-                        f"{OGVRN_PARTNERSHIP_AD}\n\n"
-                        "Please send your advertisement next. Do not include "
-                        "@here or @everyone; OGVRN will add the correct ping."
-                    )
-                    workflow["stage"] = "advertisement"
-                    return
-
-                if any(word in lowered for word in yes_words):
-                    workflow["stage"] = "advertisement"
-                    await message.channel.send(
-                        "Thank you. Please send your advertisement now. "
-                        "Do not include @here or @everyone; OGVRN will add "
-                        "the correct ping."
-                    )
-                    return
+            if workflow["stage"] == "advertisement":
+                workflow["pending_advertisement"] = content
+                workflow["stage"] = "ogvrn_confirmation"
 
                 await message.channel.send(
                     "Have you sent the official OGVRN advertisement? "
@@ -344,7 +332,22 @@ class AITicketAssistant(commands.Cog):
                 )
                 return
 
-            if workflow["stage"] == "advertisement":
+            if workflow["stage"] == "ogvrn_confirmation":
+                answer = lowered.strip()
+                sent_ogvrn_ad = answer in {
+                    "yes",
+                    "yeah",
+                    "yep",
+                    "sent",
+                    "already sent",
+                }
+
+                if not sent_ogvrn_ad:
+                    await message.channel.send(
+                        f"Please send this official OGVRN advertisement first:\\n\\n"
+                        f"{OGVRN_PARTNERSHIP_AD}"
+                    )
+
                 posts = load_partner_posts()
                 ticket_key = str(ticket_id)
 
@@ -357,8 +360,8 @@ class AITicketAssistant(commands.Cog):
 
                 if destination is None:
                     await message.channel.send(
-                        "I could not find the partnership channel. Please contact staff.",
-                            )
+                        "I could not find the OGVRN partners channel."
+                    )
                     return
 
                 representative = message.guild.get_member(
@@ -369,12 +372,15 @@ class AITicketAssistant(commands.Cog):
                     if representative
                     else f"<@{workflow['user_id']}>"
                 )
-                advertisement = clean_partnership_ad(content)
+
+                advertisement = clean_partnership_ad(
+                    workflow["pending_advertisement"]
+                )
 
                 await destination.send(
                     content=(
-                        f"{ping}\n"
-                        f"Representative: {representative_text}\n\n"
+                        f"{ping}\\n"
+                        f"Representative: {representative_text}\\n\\n"
                         f"{advertisement}"
                     ),
                     allowed_mentions=discord.AllowedMentions(
@@ -389,8 +395,8 @@ class AITicketAssistant(commands.Cog):
                 PARTNER_TICKETS.pop(ticket_id, None)
 
                 await message.channel.send(
-                    "Your partnership advertisement has been sent to the OGVRN partners channel.",
-                    )
+                    "Your advertisement was sent to the OGVRN partners channel."
+                )
                 return
 
         requirement_words = (
