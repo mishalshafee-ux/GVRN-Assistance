@@ -2,17 +2,32 @@ import discord
 from discord.ext import commands
 
 OGVRN_AD_MESSAGE = """
-# Official Greenville Roleplay Network — *"The Future of Roleplays"*
+# Official Greenville Roleplay Network
 
-Ever wanted to Roleplay with people who **don't** break the law? Well then, you've found the right Roleplay for you, **Official Greenville Roleplay Network!**
+### "The Future of Roleplays."
 
-— What we need:
+Looking for a Greenville roleplay community where realism meets excitement? Your next roleplay experience starts here!
 
-> Active Staff
-> Active Roleplayers
-> Awesome Partners
+Welcome to Official Greenville Roleplay Network, a growing community dedicated to creating immersive, realistic, and enjoyable roleplay experiences.
 
-So what you waiting for? Join the action today at [Official Greenville Roleplay Network](https://discord.gg/yps5DZE824)
+Whether you're looking to serve and protect, build your career, or simply enjoy quality roleplays with others, there's a place for you here!
+
+**What we offer**
+
+- Realistic Roleplays — Enjoy organised scenarios and immersive experiences.
+- Professional Staff Team — A team dedicated to keeping the community running smoothly.
+- Friendly Community — Meet new people, make friends, and become part of something bigger.
+
+**We're Recruiting!**
+
+We're currently looking for:
+
+- Dedicated and active staff members
+- Enthusiastic roleplayers
+
+[Make sure to join our community](https://www.roblox.com/share/g/56603729)
+
+Join [Official Greenville Roleplay Network today!](https://discord.gg/yps5DZE824)
 """
 
 
